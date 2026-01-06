@@ -6,6 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		DC261A952F0C91BC00851335 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A942F0C91BC00851335 /* Auth */; };
+		DC261A972F0C91BC00851335 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A962F0C91BC00851335 /* Functions */; };
+		DC261A992F0C91BC00851335 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A982F0C91BC00851335 /* PostgREST */; };
+		DC261A9B2F0C91BC00851335 /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A9A2F0C91BC00851335 /* Realtime */; };
+		DC261A9D2F0C91BC00851335 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A9C2F0C91BC00851335 /* Storage */; };
+		DC261A9F2F0C91BC00851335 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A9E2F0C91BC00851335 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		DC7E111B2EE7ADC2007081AB /* meudindin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = meudindin.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,16 +32,30 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DC261A992F0C91BC00851335 /* PostgREST in Frameworks */,
+				DC261A972F0C91BC00851335 /* Functions in Frameworks */,
+				DC261A9F2F0C91BC00851335 /* Supabase in Frameworks */,
+				DC261A952F0C91BC00851335 /* Auth in Frameworks */,
+				DC261A9D2F0C91BC00851335 /* Storage in Frameworks */,
+				DC261A9B2F0C91BC00851335 /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		DC261A932F0C91BC00851335 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		DC7E11122EE7ADC2007081AB = {
 			isa = PBXGroup;
 			children = (
 				DC7E111D2EE7ADC2007081AB /* meudindin */,
+				DC261A932F0C91BC00851335 /* Frameworks */,
 				DC7E111C2EE7ADC2007081AB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -65,6 +88,12 @@
 			);
 			name = meudindin;
 			packageProductDependencies = (
+				DC261A942F0C91BC00851335 /* Auth */,
+				DC261A962F0C91BC00851335 /* Functions */,
+				DC261A982F0C91BC00851335 /* PostgREST */,
+				DC261A9A2F0C91BC00851335 /* Realtime */,
+				DC261A9C2F0C91BC00851335 /* Storage */,
+				DC261A9E2F0C91BC00851335 /* Supabase */,
 			);
 			productName = meudindin;
 			productReference = DC7E111B2EE7ADC2007081AB /* meudindin.app */;
@@ -78,7 +107,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2610;
-				LastUpgradeCheck = 2610;
+				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					DC7E111A2EE7ADC2007081AB = {
 						CreatedOnToolsVersion = 26.1.1;
@@ -94,6 +123,9 @@
 			);
 			mainGroup = DC7E11122EE7ADC2007081AB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DC7E111C2EE7ADC2007081AB /* Products */;
 			projectDirPath = "";
@@ -159,6 +191,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 2FQKQQ9AB8;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -184,6 +217,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -223,6 +257,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 2FQKQQ9AB8;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -241,6 +276,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -253,10 +289,21 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2FQKQQ9AB8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -285,10 +332,21 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 2FQKQQ9AB8;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_INCOMING_NETWORK_CONNECTIONS = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = NO;
+				ENABLE_RESOURCE_ACCESS_BLUETOOTH = NO;
+				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
+				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
+				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
+				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -331,6 +389,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DC261A942F0C91BC00851335 /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		DC261A962F0C91BC00851335 /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		DC261A982F0C91BC00851335 /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		DC261A9A2F0C91BC00851335 /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		DC261A9C2F0C91BC00851335 /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		DC261A9E2F0C91BC00851335 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DC7E11132EE7ADC2007081AB /* Project object */;
 }
