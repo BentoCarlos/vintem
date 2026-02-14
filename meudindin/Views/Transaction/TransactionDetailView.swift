@@ -6,10 +6,23 @@
 //
 
 import SwiftUI
+import Supabase
+
+struct TransactionUpdate: Codable {
+    let name: String
+}
 
 struct TransactionDetailView: View {
     @Environment(\.dismiss) var dismiss
-    let transaction: Transaction
+    @EnvironmentObject var supabase: SupabaseManager
+
+    @State var transaction: Transaction
+    @State var transactionName: String
+
+    init(transaction: Transaction) {
+        _transaction = State(initialValue: transaction)
+        _transactionName = State(initialValue: transaction.name)
+    }
 
     var body: some View {
         let transactionId = transaction.id != nil ? String(transaction.id!) : ""
@@ -19,9 +32,9 @@ struct TransactionDetailView: View {
         }
 
         VStack{
-            HStack(spacing: 16) {
+            VStack(spacing: 16) {
                 Text("Transação  #\(transactionId)")
-                Text("\(transaction.name)")
+                TextField("", text: $transactionName)
 
                 if (transactionValue != nil) {
                     Text(transactionValue!, format: .currency(code: "BRL"))
@@ -35,8 +48,32 @@ struct TransactionDetailView: View {
             }
             .padding(16)
 
-            Button("Ok") {
-                dismiss()
+            HStack {
+                Button("Voltar") {
+                    dismiss()
+                }
+
+                Button("Atualizar") {
+                    let updatedTransaction = TransactionUpdate(name: transactionName)
+
+                    Task {
+                        do {
+                            let res = try await supabase.client
+                                .from("transactions")
+                                .update(updatedTransaction)
+                                .eq("id", value: transaction.id)
+                                .execute()
+
+                            print(res)
+
+                            await supabase.refreshTransactions()
+                        } catch {
+                            print("Erro ao atualizar transação #\(transaction.id, default: "n/a"): \(error)")
+                        }
+                    }
+
+                    dismiss()
+                }
             }
             .buttonStyle(.glassProminent)
         }

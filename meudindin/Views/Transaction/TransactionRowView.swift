@@ -12,6 +12,7 @@ struct TransactionRowView : View {
     let colorPurple = Color.init(hex: "#810FCC")
 
     @Environment(\.colorScheme) var colorScheme: ColorScheme
+    @EnvironmentObject var supabase: SupabaseManager
 
     @State private var isHovered : Bool = false
     @State private var isHoveredDel : Bool = false
@@ -89,6 +90,7 @@ struct TransactionRowView : View {
             }
             .sheet(isPresented: $isShowingAlert) {
                 TransactionDetailView(transaction: transaction)
+                    .environmentObject(supabase)
             }
         }
     }

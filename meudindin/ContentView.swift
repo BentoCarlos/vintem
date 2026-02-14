@@ -68,6 +68,7 @@ struct ContentView: View {
                                     insertion: .move(edge: .top).combined(with: .opacity),
                                     removal: .move(edge: .trailing).combined(with: .opacity)
                                 ))
+                                .environmentObject(supabase)
                             }
                         }
                     }
