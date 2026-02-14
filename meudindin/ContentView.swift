@@ -9,13 +9,6 @@ import SwiftUI
 import SwiftData
 import Supabase
 
-//struct Transacao: Decodable, Identifiable {
-//    let id: Int
-//    let transaction_type_id: Int
-//    let payment_type_id: Int
-//    let name: String
-//}
-
 struct ContentView: View {
     @EnvironmentObject var supabase: SupabaseManager
 
@@ -23,7 +16,6 @@ struct ContentView: View {
     @State var addButtonHover: Bool = false
     @State var showAddTransactionSheet: Bool = false
 
-//    @Query(sort: \Transaction.id) private var transactions: [Transaction]
     @Environment(\.modelContext) private var context
 
 //    var filteredTransactions: [Transaction] {
@@ -47,13 +39,24 @@ struct ContentView: View {
         } else {
             NavigationStack {
                 ScrollView {
-                    //                let groupedData = Dictionary(grouping: filteredTransactions) { $0.paymentType }
-                    //                            let chartData = groupedData.map { (key, value) in
-                    //                                PaymentData(type: key, totalValue: value.reduce(0) { $0 + $1.value })
-                    //                            }.sorted { $0.type.rawValue < $1.type.rawValue }
-                    //
-                    //                TransactionPieChartView(chartData: chartData)
-                    //                    .padding(20)
+                    // Filtra transações que têm payment_type e amount_cents válidos
+                    let validTransactions = supabase.transactionsDB.compactMap { transaction -> (PaymentType, Double)? in
+                        guard let type = transaction.payment_type?.toEnum,
+                              let cents = transaction.amount_cents else { return nil }
+                        return (type, Double(cents / 100))
+                    }
+
+                    // Agrupa e soma
+                    let groupedData = Dictionary(grouping: validTransactions, by: { $0.0 })
+
+                    let chartData = groupedData.map { (key, value) in
+                        PaymentData(
+                            type: key,
+                            totalValue: value.reduce(0) { $0 + $1.1 }
+                        )
+                    }.sorted { $0.type.rawValue < $1.type.rawValue }
+                    TransactionPieChartView(chartData: chartData)
+                        .padding(20)
 
                     LazyVStack(spacing: 8){
                         //                    ForEach(filteredTransactions) { transaction in
@@ -71,9 +74,16 @@ struct ContentView: View {
                                 TransactionRowView(
                                     transaction: item,
                                     onDelete: { transactionToDelete in
-
+                                        Task {
+                                            await supabase.transactions.delete(id: transactionToDelete.id!)
+                                            await supabase.refreshTransactions()
+                                        }
                                     }
                                 )
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .top).combined(with: .opacity),
+                                    removal: .move(edge: .trailing).combined(with: .opacity)
+                                ))
                             }
                         }
                     }
@@ -111,8 +121,6 @@ struct ContentView: View {
         }
     }
 }
-
-
 
 #Preview {
     ContentView()

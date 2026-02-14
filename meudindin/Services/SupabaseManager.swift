@@ -7,8 +7,10 @@
 
 import Supabase
 import Foundation
-internal import Combine
+import Combine
+import SwiftUI
 
+@MainActor
 class SupabaseManager: ObservableObject {
     @Published var client = SupabaseClient(
         supabaseURL: URL(string: ProcessInfo.processInfo.environment["SUPABASE_DB_URL"]!)!,
@@ -21,15 +23,13 @@ class SupabaseManager: ObservableObject {
     lazy var transactions = TransactionRepository(client: client)
 
     func fetchTransactions() async {
-        await MainActor.run { loadingData = true }
+        loadingData = true
 
         do {
             let response: [Transaction] = try await transactions.fetchAll()
-            await MainActor.run {
-                transactionsDB = response
-                loadingData = false
-                errorLoadingData = false
-            }
+            transactionsDB = response
+            loadingData = false
+            errorLoadingData = false
         } catch {
             print("Erro ao buscar as transações: \(error)")
             await MainActor.run {
@@ -42,7 +42,7 @@ class SupabaseManager: ObservableObject {
     func refreshTransactions() async {
         do {
             let response: [Transaction] = try await transactions.fetchAll()
-            await MainActor.run {
+            withAnimation(.spring(duration: 0.3)) {
                 transactionsDB = response
             }
         } catch {

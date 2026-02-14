@@ -30,7 +30,7 @@ struct TransactionDetailView: View {
                 }
 
                 if (transaction.payment_type != nil) {
-                    PaymentTypeView(buttonType: transaction.payment_type!)
+                    PaymentTypeView(buttonType: transaction.payment_type!.toEnum!)
                 }
             }
             .padding(16)
@@ -45,6 +45,6 @@ struct TransactionDetailView: View {
 }
 
 #Preview {
-    let transaction = Transaction(id: 123, name: "Test", amount_cents: 10000, payment_type: .credito)
+    let transaction = Transaction(id: 123, name: "Test", amount_cents: 10000, payment_type: PaymentTypeDB(name: "Crédito"))
     TransactionDetailView(transaction: transaction)
 }

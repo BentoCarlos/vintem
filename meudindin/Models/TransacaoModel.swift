@@ -8,13 +8,26 @@
 import Foundation
 import SwiftData
 
-// Make PaymentType persistable by giving it a raw value and Codable conformance
 enum PaymentType: String, Codable, CaseIterable, Sendable {
-    case dinheiro
-    case debito
-    case credito
-    case pix
-    case outro
+    case dinheiro = "Dinheiro"
+    case debito = "Débito"
+    case credito = "Crédito"
+    case pix = "Pix"
+    case outro = "Outro"
+}
+
+struct PaymentTypeDB: Codable {
+    let name: String
+
+    var toEnum: PaymentType? {
+        switch name {
+        case "Crédito":  return .credito
+        case "Débito":   return .debito
+        case "Pix":      return .pix
+        case "Dinheiro": return .dinheiro
+        default:         return .outro
+        }
+    }
 }
 
 //@Model
@@ -23,9 +36,9 @@ final class Transaction: Identifiable, Codable {
     @Attribute(.unique) var id: Int? = nil
     var name: String
     var amount_cents: Int? = nil
-    var payment_type: PaymentType? = nil
+    var payment_type: PaymentTypeDB? = nil
 
-    init(id: Int? = nil, name: String, amount_cents: Int? = nil, payment_type: PaymentType? = nil) {
+    init(id: Int? = nil, name: String, amount_cents: Int? = nil, payment_type: PaymentTypeDB? = nil) {
         self.id = id
         self.name = name
         self.amount_cents = amount_cents
@@ -36,5 +49,6 @@ final class Transaction: Identifiable, Codable {
         case id
         case name
         case amount_cents
+        case payment_type
     }
 }

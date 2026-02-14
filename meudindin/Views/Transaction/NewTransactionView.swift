@@ -7,9 +7,6 @@ struct NewTransactionView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
 
-//    @Query private var transactions: [Transaction]
-//    @State private var transactions: [Transaction]
-
     @State private var titulo: String = ""
     @State private var valor: Double? = nil
     @State private var tipoPagamento: PaymentType = .credito
@@ -73,9 +70,7 @@ struct NewTransactionView: View {
     }
     
     private func saveTransaction() async {
-//        let nextId = (transactions.map { $0.id }.max() ?? 0) + 1
         let newTransaction = Transaction(
-//            id: nextId,
             name: titulo,
             amount_cents: valor != nil ? Int(valor! * 100) : 0,
 //            paymentType: tipoPagamento
@@ -83,7 +78,6 @@ struct NewTransactionView: View {
 
         // Adicionando uma animação leve na inserção
         withAnimation(.spring(duration: 0.4)) {
-//            context.insert(newTransaction)
         }
 
         await insertTransaction(newTransaction: newTransaction)

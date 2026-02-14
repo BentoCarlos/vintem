@@ -18,8 +18,20 @@ class TransactionRepository {
     func fetchAll() async throws -> [Transaction] {
         return try await client
             .from("transactions")
-            .select("id, name, amount_cents")
+            .select("id, name, amount_cents, payment_type:payment_types(name)")
             .execute()
             .value
+    }
+
+    func delete(id: Int) async {
+        do {
+            try await client
+                .from("transactions")
+                .delete()
+                .eq("id", value: id)
+                .execute()
+        } catch {
+            print("Erro ao deletar transação: \(error)")
+        }
     }
 }
