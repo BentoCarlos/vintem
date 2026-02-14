@@ -16,7 +16,7 @@ struct PaymentData: Identifiable {
 }
 
 struct TransactionPieChartView: View {
-    @Query private var transactions: [Transaction]
+//    @Query private var transactions: [Transaction]
     // selectedAngle é o que muda rapidamente no hover
     @State private var selectedAngle: Double?
 

@@ -20,28 +20,42 @@ struct TransactionRowView : View {
     @Namespace var namespace
 
     var body: some View {
+        let transactionId = transaction.id != nil ? String(transaction.id!) : ""
+        var transactionValue: Double? {
+            guard let cents = transaction.amount_cents else { return nil }
+            return Double(cents) / 100.0
+        }
         GlassEffectContainer {
             HStack{
-                Text("#\(transaction.id)")
+                Text("#\(transactionId)")
                     .frame(alignment: .leading)
                     .padding()
                     .glassEffect()
-                    .glassEffectUnion(id: "id-\(transaction.id)", namespace: namespace)
+                    .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
 
                 Text(transaction.name)
                     .frame(alignment: .leading)
                     .padding()
                     .glassEffect()
-                    .glassEffectUnion(id: "id-\(transaction.id)", namespace: namespace)
+                    .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
 
                 Spacer()
 
-                Text("R$ \(transaction.value, specifier: "%.2f")")
-                    .frame(alignment: .trailing)
-                    .padding()
-                    .padding(.trailing, isHovered ? 40 : 0)
-                    .glassEffect()
-                    .glassEffectUnion(id: "id-\(transaction.id)", namespace: namespace)
+                if (transactionValue != nil) {
+                    Text("R$ \(transactionValue!, specifier: "%.2f")")
+                        .frame(alignment: .trailing)
+                        .padding()
+                        .padding(.trailing, isHovered ? 40 : 0)
+                        .glassEffect()
+                        .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
+                } else {
+                    Text("N/A")
+                        .frame(alignment: .trailing)
+                        .padding()
+                        .padding(.trailing, isHovered ? 40 : 0)
+                        .glassEffect()
+                        .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
+                }
             }
             .contentShape(Rectangle())
             .frame(maxWidth: .infinity, alignment: .leading)

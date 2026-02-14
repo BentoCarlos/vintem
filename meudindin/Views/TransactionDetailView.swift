@@ -12,13 +12,17 @@ struct TransactionDetailView: View {
     let transaction: Transaction
 
     var body: some View {
+        let transactionId = transaction.id != nil ? String(transaction.id!) : ""
+
         VStack{
             HStack(spacing: 16) {
-                Text("Transação  #\(transaction.id)")
+                Text("Transação  #\(transactionId)")
                 Text("\(transaction.name)")
-                Text(transaction.value, format: .currency(code: "BRL"))
+                Text(transaction.amount_cents ?? 0, format: .currency(code: "BRL"))
 
-                PaymentTypeView(buttonType: transaction.paymentType)
+                if (transaction.payment_type != nil) {
+                    PaymentTypeView(buttonType: transaction.payment_type!)
+                }
             }
             .padding(16)
 
@@ -32,6 +36,6 @@ struct TransactionDetailView: View {
 }
 
 #Preview {
-    let transaction = Transaction(id: 123, name: "Test", value: 100.00, paymentType: .credito)
+    let transaction = Transaction(id: 123, name: "Test", amount_cents: 10000, payment_type: .credito)
     TransactionDetailView(transaction: transaction)
 }

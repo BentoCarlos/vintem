@@ -1,11 +1,14 @@
 import SwiftUI
 import SwiftData
+import Supabase
 
 struct NewTransactionView: View {
+    @EnvironmentObject var supabase: SupabaseManager
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) var dismiss
 
-    @Query private var transactions: [Transaction]
+//    @Query private var transactions: [Transaction]
+//    @State private var transactions: [Transaction]
 
     @State private var titulo: String = ""
     @State private var valor: Double? = nil
@@ -59,7 +62,7 @@ struct NewTransactionView: View {
 
                 Spacer()
 
-                Button("Salvar") { saveTransaction() }
+                Button("Salvar") { Task { await saveTransaction() } }
                     .buttonStyle(.borderedProminent)
                     .disabled(isFormInvalid)
                     .keyboardShortcut(.defaultAction)
@@ -69,19 +72,32 @@ struct NewTransactionView: View {
         .frame(width: 420) // Aumentamos um pouco a largura para o segmented respirar
     }
     
-    private func saveTransaction() {
-        let nextId = (transactions.map { $0.id }.max() ?? 0) + 1
+    private func saveTransaction() async {
+//        let nextId = (transactions.map { $0.id }.max() ?? 0) + 1
         let newTransaction = Transaction(
-            id: nextId,
+//            id: nextId,
             name: titulo,
-            value: valor ?? 0,
-            paymentType: tipoPagamento
+//            value: valor ?? 0,
+//            paymentType: tipoPagamento
         )
 
         // Adicionando uma animação leve na inserção
         withAnimation(.spring(duration: 0.4)) {
-            context.insert(newTransaction)
+//            context.insert(newTransaction)
         }
+
+        await insertTransaction(newTransaction: newTransaction)
         dismiss()
+    }
+
+    private func insertTransaction(newTransaction: Transaction) async {
+        do {
+            try await supabase.client
+                .from("transactions")
+                .insert(newTransaction)
+                .execute()
+        }  catch {
+            print("Erro ao criar nova transação: \(error)")
+        }
     }
 }
