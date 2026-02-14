@@ -84,7 +84,7 @@ struct NewTransactionView: View {
             }
 
             if (paymentId == nil) {
-                throw TransactionError.newPaymentType(message: "Erro ao recuperar o tipo de pagamento. paymentId: \(paymentId)")
+                throw TransactionError.newPaymentType(message: "Erro ao recuperar o tipo de pagamento. paymentId: \(paymentId, default: "n/a")")
             }
 
             let newTransaction = Transaction(
@@ -93,24 +93,13 @@ struct NewTransactionView: View {
                 payment_type_id: paymentId
             )
 
-            await insertTransaction(newTransaction: newTransaction)
+            await supabase.transactions.insert(newTransaction: newTransaction)
 
             await supabase.refreshTransactions();
 
             dismiss()
         } catch {
             print("Erro ao criar nova transação: \(error)")
-        }
-    }
-
-    private func insertTransaction(newTransaction: Transaction) async {
-        do {
-            try await supabase.client
-                .from("transactions")
-                .insert(newTransaction)
-                .execute()
-        }  catch {
-            print("Erro ao inserir nova transação: \(error)")
         }
     }
 }

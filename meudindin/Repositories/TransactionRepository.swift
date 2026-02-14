@@ -23,6 +23,29 @@ class TransactionRepository {
             .value
     }
 
+    func insert(newTransaction: Transaction) async {
+        do {
+            try await client
+                .from("transactions")
+                .insert(newTransaction)
+                .execute()
+        }  catch {
+            print("Erro ao inserir nova transação: \(error)")
+        }
+    }
+
+    func update(for id : String, updatedTransaction: TransactionUpdate) async throws {
+        do {
+            let res = try await client
+                .from("transactions")
+                .update(updatedTransaction)
+                .eq("id", value: id)
+                .execute()
+        } catch {
+            print("Erro ao atualizar transação #\(id, default: "n/a"): \(error)")
+        }
+    }
+
     func delete(id: Int) async {
         do {
             try await client

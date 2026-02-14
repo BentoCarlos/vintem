@@ -57,19 +57,7 @@ struct TransactionDetailView: View {
                     let updatedTransaction = TransactionUpdate(name: transactionName)
 
                     Task {
-                        do {
-                            let res = try await supabase.client
-                                .from("transactions")
-                                .update(updatedTransaction)
-                                .eq("id", value: transaction.id)
-                                .execute()
-
-                            print(res)
-
-                            await supabase.refreshTransactions()
-                        } catch {
-                            print("Erro ao atualizar transação #\(transaction.id, default: "n/a"): \(error)")
-                        }
+                        try? await supabase.transactions.update(for: transactionId, updatedTransaction: updatedTransaction)
                     }
 
                     dismiss()
