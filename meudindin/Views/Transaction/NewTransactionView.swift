@@ -21,6 +21,8 @@ struct NewTransactionView: View {
     @State private var tipoPagamento: PaymentType = .credito
     @State private var isSaving = false
     @State private var appeared = false
+    @State private var installments: Double = 1
+    @State private var selectedDate = Date()
 
     var isFormInvalid: Bool {
         titulo.trimmingCharacters(in: .whitespaces).isEmpty || (valor ?? 0) <= 0
@@ -152,7 +154,80 @@ struct NewTransactionView: View {
                         .padding(6)
                         .glassEffect(in: RoundedRectangle(cornerRadius: 14))
                     }
-                }
+
+                    // Parcelas
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label("Parcelas", systemImage: "creditcard.and.numbers")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                            .tracking(0.6)
+
+                        VStack(spacing: 8) {
+
+                            // Número de parcelas
+                            Text("\(Int(installments))x\(installments == 1 ? "  (À vista)" : "")")
+                                .fontWeight(.bold)
+                                .font(.title)
+                                .foregroundStyle(.primary)
+                                .contentTransition(.numericText())
+                                .animation(.bouncy, value: installments)
+                                .frame(maxWidth: .infinity, alignment: .center)
+
+                            // Slider com botões
+                            HStack(alignment: .center, spacing: 8) {
+                                Button(action: {
+                                    if installments > 1 { installments -= 1 }
+                                }) {
+                                    Image(systemName: "minus")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(paymentColor)
+                                        .padding(8)
+                                }
+                                .buttonStyle(.glass)
+
+                                Slider(value: $installments, in: 1...24, step: 1)
+                                    .tint(paymentColor)
+
+                                Button(action: {
+                                    if installments < 24 { installments += 1 }
+                                }) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(paymentColor)
+                                        .padding(8)
+                                }
+                                .buttonStyle(.glass)
+                            }
+
+                            Divider()
+
+                            // Vencimento
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Vencimento")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                        .textCase(.uppercase)
+                                        .tracking(0.5)
+
+                                    if installments > 1 {
+                                        Text("1ª parcela")
+                                            .font(.system(size: 10, weight: .medium))
+                                            .foregroundStyle(.tertiary)
+                                    }
+                                }
+
+                                Spacer()
+
+                                DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                                    .datePickerStyle(.compact)
+                                    .labelsHidden()
+                            }
+                        }
+                        .padding(16)
+                        .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                    }                }
                 .padding(.horizontal, 20)
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 10)
@@ -226,4 +301,12 @@ struct NewTransactionView: View {
         }
         isSaving = false
     }
+}
+
+#Preview {
+    NewTransactionView()
+        .environmentObject({
+            let manager = SupabaseManager()
+            return manager
+        }())
 }
