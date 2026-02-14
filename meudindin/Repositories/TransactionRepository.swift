@@ -34,9 +34,9 @@ class TransactionRepository {
         }
     }
 
-    func update(for id : String, updatedTransaction: TransactionUpdate) async throws {
+    func update(for id : Int, updatedTransaction: TransactionUpdate) async throws {
         do {
-            let res = try await client
+            try await client
                 .from("transactions")
                 .update(updatedTransaction)
                 .eq("id", value: id)
