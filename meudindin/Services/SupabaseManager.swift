@@ -22,6 +22,7 @@ class SupabaseManager: ObservableObject {
 
     lazy var transactions = TransactionRepository(client: client)
     lazy var paymentTypes = PaymentTypeRepository(client: client)
+    lazy var installments = InstallmentRepository(client: client)
 
     func fetchTransactions() async {
         loadingData = true

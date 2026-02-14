@@ -23,14 +23,23 @@ class TransactionRepository {
             .value
     }
 
-    func insert(newTransaction: Transaction) async {
+    func insert(newTransaction: Transaction) async -> Int? {
         do {
-            try await client
+            struct TransactionInsert: Codable {
+                let id: Int
+            }
+
+            let res: [TransactionInsert] = try await client
                 .from("transactions")
                 .insert(newTransaction)
+                .select("id")
                 .execute()
+                .value
+
+            return res.first!.id
         }  catch {
             print("Erro ao inserir nova transação: \(error)")
+            return nil
         }
     }
 

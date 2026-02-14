@@ -9,6 +9,7 @@ import Supabase
 
 enum TransactionError: Error {
     case newPaymentType(message: String)
+    case newTransaction(message: String)
 }
 
 struct NewTransactionView: View {
@@ -164,9 +165,18 @@ struct NewTransactionView: View {
                             .tracking(0.6)
 
                         VStack(spacing: 8) {
+                            var installmentValue: String {
+                                var returnValue = ""
+
+                                if let totalValue = valor {
+                                    returnValue = String((totalValue / installments).formatted(.currency(code: Locale.current.currency?.identifier ?? "BRL")))
+                                }
+
+                                return returnValue
+                            }
 
                             // Número de parcelas
-                            Text("\(Int(installments))x\(installments == 1 ? "  (À vista)" : "")")
+                            Text("\(Int(installments))x \(installments == 1 ? "(À vista)" : installmentValue)")
                                 .fontWeight(.bold)
                                 .font(.title)
                                 .foregroundStyle(.primary)
@@ -293,7 +303,26 @@ struct NewTransactionView: View {
                 payment_type_id: paymentId
             )
 
-            await supabase.transactions.insert(newTransaction: newTransaction)
+            let newTransactionId: Int? = await supabase.transactions.insert(newTransaction: newTransaction)
+
+            if (newTransactionId == nil) {
+                throw TransactionError.newTransaction(message: "Erro ao recuperar o id da nova transação")
+            }
+
+            for i in 1...Int(installments) {
+                var newInstallment: Installment {
+                    return Installment(transaction_id: newTransactionId!,
+                                portion: i,
+                                total_portions: Int(installments),
+                                payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
+                                created_at: Date.now,
+                                updated_at: Date.now
+                    )
+                }
+
+                await supabase.installments.insert(for: newTransactionId!, newInstallment: newInstallment)
+            }
+
             await supabase.refreshTransactions()
             dismiss()
         } catch {

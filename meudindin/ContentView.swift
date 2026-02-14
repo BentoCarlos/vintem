@@ -112,6 +112,7 @@ struct ContentView: View {
                                         transaction: item,
                                         onDelete: { transactionToDelete in
                                             Task {
+                                                await supabase.installments.deleteFromTransaction(for: transactionToDelete.id!)
                                                 await supabase.transactions.delete(id: transactionToDelete.id!)
                                                 await supabase.refreshTransactions()
                                             }
