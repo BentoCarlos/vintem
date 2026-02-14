@@ -16,40 +16,26 @@ struct PaymentData: Identifiable {
 }
 
 struct TransactionPieChartView: View {
-    //    @Query private var transactions: [Transaction]
     @State private var selectedAngle: Double?
+    @State private var selectedSectorId: String?  // ✅ cache do setor selecionado
     @EnvironmentObject var supabase: SupabaseManager
 
-    // Filtra transações que têm payment_type e amount_cents válidos
     private var validTransactions: [(PaymentType, Double)] {
         supabase.transactionsDB.compactMap { transaction -> (PaymentType, Double)? in
             guard let type = transaction.payment_type?.toEnum,
                   let cents = transaction.amount_cents else { return nil }
-            return (type, Double(cents / 100))
+            return (type, Double(cents) / 100.0)  // ✅ corrigido: estava cents/100 inteiro
         }
     }
 
-    // Agrupa e soma
-    private var groupedData: [PaymentType: [(PaymentType, Double)]] { Dictionary(grouping: validTransactions, by: { $0.0 }) }
+    private var groupedData: [PaymentType: [(PaymentType, Double)]] {
+        Dictionary(grouping: validTransactions, by: { $0.0 })
+    }
 
     private var chartData: [PaymentData] {
         groupedData.map { (key, value) in
-            PaymentData(
-                type: key,
-                totalValue: value.reduce(0) { $0 + $1.1 }
-            )
+            PaymentData(type: key, totalValue: value.reduce(0) { $0 + $1.1 })
         }.sorted { $0.type.rawValue < $1.type.rawValue }
-    }
-
-    private var selectedSector: PaymentData? {
-        guard let selectedAngle = selectedAngle else { return nil }
-        var currentCumulativeValue = 0.0
-        return chartData.first { data in
-            let startAngle = currentCumulativeValue
-            currentCumulativeValue += data.totalValue
-            let endAngle = currentCumulativeValue
-            return selectedAngle >= startAngle && selectedAngle < endAngle
-        }
     }
 
     var body: some View {
@@ -57,14 +43,14 @@ struct TransactionPieChartView: View {
             SectorMark(
                 angle: .value("Tipo", data.totalValue),
                 innerRadius: .ratio(0.6),
-                outerRadius: selectedSector?.id == data.id ? .ratio(0.9) : .ratio(0.8),
+                outerRadius: selectedSectorId == data.id ? .ratio(0.9) : .ratio(0.8),
                 angularInset: 1
             )
             .cornerRadius(4)
             .foregroundStyle(by: .value("Tipo", data.type.rawValue))
-            .opacity(selectedSector == nil || selectedSector?.id == data.id ? 1.0 : 0.5)
+            .opacity(selectedSectorId == nil || selectedSectorId == data.id ? 1.0 : 0.5)
             .annotation(position: .overlay) {
-                Text(data.totalValue, format: .currency(code:"BRL"))
+                Text(data.totalValue, format: .currency(code: "BRL"))
                     .font(.headline)
             }
         }
@@ -72,7 +58,20 @@ struct TransactionPieChartView: View {
         .contentShape(Circle(), eoFill: false)
         .chartLegend(alignment: .center)
         .frame(minWidth: 300, minHeight: 300)
-        .drawingGroup()
-        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: selectedAngle)
+        // ✅ removido .drawingGroup() — causa acúmulo de layers
+        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: selectedSectorId)
+        .onChange(of: selectedAngle) { _, newAngle in
+            // ✅ cálculo fora do body, só roda quando selectedAngle muda
+            guard let newAngle else {
+                selectedSectorId = nil
+                return
+            }
+            var cumulative = 0.0
+            selectedSectorId = chartData.first { data in
+                let start = cumulative
+                cumulative += data.totalValue
+                return newAngle >= start && newAngle < cumulative
+            }?.id
+        }
     }
 }
