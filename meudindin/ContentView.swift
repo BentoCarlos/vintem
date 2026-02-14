@@ -21,11 +21,7 @@ struct ContentView: View {
 
     @State var searchText: String = ""
     @State var addButtonHover: Bool = false
-    @State var loadingData: Bool = true
-    @State var errorLoadingData: Bool = false
     @State var showAddTransactionSheet: Bool = false
-
-    @State var transactionsDB: [Transaction] = []
 
 //    @Query(sort: \Transaction.id) private var transactions: [Transaction]
     @Environment(\.modelContext) private var context
@@ -41,12 +37,12 @@ struct ContentView: View {
 //    }
 
     var body: some View {
-        if loadingData {
+        if supabase.loadingData {
             ProgressView()
                 .task {
-                    await fetchTransactions()
+                    await supabase.fetchTransactions()
                 }
-        } else if errorLoadingData {
+        } else if supabase.errorLoadingData {
             Text("Erro ao carregar os dados")
         } else {
             NavigationStack {
@@ -70,8 +66,8 @@ struct ContentView: View {
                         //                            }
                         //                        )
                         //                    }
-                        if !transactionsDB.isEmpty {
-                            ForEach(transactionsDB) { item in
+                        if !supabase.transactionsDB.isEmpty {
+                            ForEach(supabase.transactionsDB) { item in
                                 TransactionRowView(
                                     transaction: item,
                                     onDelete: { transactionToDelete in
@@ -112,28 +108,6 @@ struct ContentView: View {
                 NewTransactionView()
                     .environmentObject(supabase)
             }
-        }
-    }
-
-    func fetchTransactions() async {
-        do {
-            let dados: [Transaction] = try await supabase.client
-                .from("transactions")
-                .select("id, name, amount_cents")
-                .execute()
-                .value
-
-            // Atualiza a UI na thread principal
-            await MainActor.run {
-                self.transactionsDB = dados
-                self.loadingData = false
-                self.errorLoadingData = false
-                print("Sucesso! Carregadas \(dados.count) transações do Supabase.")
-            }
-        } catch {
-            print("Erro ao buscar no Supabase: \(error)")
-            self.errorLoadingData = true
-            self.loadingData = false
         }
     }
 }

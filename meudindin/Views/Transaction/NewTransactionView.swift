@@ -77,7 +77,7 @@ struct NewTransactionView: View {
         let newTransaction = Transaction(
 //            id: nextId,
             name: titulo,
-//            value: valor ?? 0,
+            amount_cents: valor != nil ? Int(valor! * 100) : 0,
 //            paymentType: tipoPagamento
         )
 
@@ -87,6 +87,9 @@ struct NewTransactionView: View {
         }
 
         await insertTransaction(newTransaction: newTransaction)
+
+        await supabase.refreshTransactions();
+
         dismiss()
     }
 
