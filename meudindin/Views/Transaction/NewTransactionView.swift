@@ -2,6 +2,10 @@ import SwiftUI
 import SwiftData
 import Supabase
 
+enum TransactionError: Error {
+    case newPaymentType(message: String)
+}
+
 struct NewTransactionView: View {
     @EnvironmentObject var supabase: SupabaseManager
     @Environment(\.modelContext) private var context
@@ -70,21 +74,33 @@ struct NewTransactionView: View {
     }
     
     private func saveTransaction() async {
-        let newTransaction = Transaction(
-            name: titulo,
-            amount_cents: valor != nil ? Int(valor! * 100) : 0,
-//            paymentType: tipoPagamento
-        )
+        do {
+            var paymentId: Int? = nil
 
-        // Adicionando uma animação leve na inserção
-        withAnimation(.spring(duration: 0.4)) {
+            paymentId = try? await supabase.paymentTypes.fetchPaymentType(for: tipoPagamento)
+
+            if (paymentId == nil) {
+                paymentId = try? await supabase.paymentTypes.insert(typeName: tipoPagamento.rawValue)
+            }
+
+            if (paymentId == nil) {
+                throw TransactionError.newPaymentType(message: "Erro ao recuperar o tipo de pagamento. paymentId: \(paymentId)")
+            }
+
+            let newTransaction = Transaction(
+                name: titulo,
+                amount_cents: valor != nil ? Int(valor! * 100) : 0,
+                payment_type_id: paymentId
+            )
+
+            await insertTransaction(newTransaction: newTransaction)
+
+            await supabase.refreshTransactions();
+
+            dismiss()
+        } catch {
+            print("Erro ao criar nova transação: \(error)")
         }
-
-        await insertTransaction(newTransaction: newTransaction)
-
-        await supabase.refreshTransactions();
-
-        dismiss()
     }
 
     private func insertTransaction(newTransaction: Transaction) async {
@@ -94,7 +110,8 @@ struct NewTransactionView: View {
                 .insert(newTransaction)
                 .execute()
         }  catch {
-            print("Erro ao criar nova transação: \(error)")
+            print("Erro ao inserir nova transação: \(error)")
         }
     }
 }
+

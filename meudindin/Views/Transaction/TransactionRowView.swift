@@ -11,6 +11,8 @@ struct TransactionRowView : View {
     let transaction: Transaction
     let colorPurple = Color.init(hex: "#810FCC")
 
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
+
     @State private var isHovered : Bool = false
     @State private var isHoveredDel : Bool = false
     @State private var isShowingAlert: Bool = false
@@ -66,7 +68,7 @@ struct TransactionRowView : View {
                     Image(systemName: "trash")
                 }
                 .background(isHoveredDel ? Color.red : Color.clear)
-                .foregroundColor(Color.white)
+                .foregroundColor(colorScheme == .light ? Color.black : Color.white)
                 .cornerRadius(8)
                 .offset(x: isHovered ? 0 : 60)
                 .onHover { hoveringDel in

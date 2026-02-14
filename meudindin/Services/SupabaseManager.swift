@@ -21,6 +21,7 @@ class SupabaseManager: ObservableObject {
     @Published var errorLoadingData: Bool = false
 
     lazy var transactions = TransactionRepository(client: client)
+    lazy var paymentTypes = PaymentTypeRepository(client: client)
 
     func fetchTransactions() async {
         loadingData = true

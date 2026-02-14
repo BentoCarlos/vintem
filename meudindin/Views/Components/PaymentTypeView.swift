@@ -15,6 +15,8 @@ struct PaymentButtonConfig {
 struct PaymentTypeView: View {
     let buttonType: PaymentType
 
+    @Environment(\.colorScheme) var colorScheme: ColorScheme
+
     private var buttonConfig: PaymentButtonConfig {
         switch buttonType {
         case .credito:
@@ -40,7 +42,7 @@ struct PaymentTypeView: View {
             .cornerRadius(8)
             .overlay {
                 Text(buttonConfig.text)
-                    .foregroundStyle(Color.black)
+                    .foregroundStyle(colorScheme == .light ? Color.white : Color.black)
             }
     }
 }

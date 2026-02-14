@@ -10,17 +10,36 @@ import SwiftData
 import Charts
 
 struct PaymentData: Identifiable {
-    var id = UUID()
+    var id: String { type.rawValue }
     var type: PaymentType
     var totalValue: Double
 }
 
 struct TransactionPieChartView: View {
-//    @Query private var transactions: [Transaction]
-    // selectedAngle é o que muda rapidamente no hover
+    //    @Query private var transactions: [Transaction]
     @State private var selectedAngle: Double?
+    @EnvironmentObject var supabase: SupabaseManager
 
-    let chartData: [PaymentData]
+    // Filtra transações que têm payment_type e amount_cents válidos
+    private var validTransactions: [(PaymentType, Double)] {
+        supabase.transactionsDB.compactMap { transaction -> (PaymentType, Double)? in
+            guard let type = transaction.payment_type?.toEnum,
+                  let cents = transaction.amount_cents else { return nil }
+            return (type, Double(cents / 100))
+        }
+    }
+
+    // Agrupa e soma
+    private var groupedData: [PaymentType: [(PaymentType, Double)]] { Dictionary(grouping: validTransactions, by: { $0.0 }) }
+
+    private var chartData: [PaymentData] {
+        groupedData.map { (key, value) in
+            PaymentData(
+                type: key,
+                totalValue: value.reduce(0) { $0 + $1.1 }
+            )
+        }.sorted { $0.type.rawValue < $1.type.rawValue }
+    }
 
     private var selectedSector: PaymentData? {
         guard let selectedAngle = selectedAngle else { return nil }
