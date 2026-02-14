@@ -2,96 +2,127 @@
 //  TransactionRowView.swift
 //  meudindin
 //
-//  Created by Bento Carlos on 16/12/25.
-//
 
 import SwiftUI
 
-struct TransactionRowView : View {
+struct TransactionRowView: View {
     let transaction: Transaction
-    let colorPurple = Color.init(hex: "#810FCC")
 
-    @Environment(\.colorScheme) var colorScheme: ColorScheme
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject var supabase: SupabaseManager
 
-    @State private var isHovered : Bool = false
-    @State private var isHoveredDel : Bool = false
-    @State private var isShowingAlert: Bool = false
+    @State private var isHovered = false
+    @State private var isHoveredDel = false
+    @State private var isShowingDetail = false
 
     var onDelete: (Transaction) -> Void
 
-    @Namespace var namespace
+    private var transactionId: String {
+        transaction.id.map { String($0) } ?? "—"
+    }
+
+    private var transactionValue: Double? {
+        transaction.amount_cents.map { Double($0) / 100.0 }
+    }
+
+    private var paymentType: PaymentType? {
+        transaction.payment_type?.toEnum
+    }
+
+    private var paymentColor: Color {
+        switch paymentType {
+        case .credito:  return Color(red: 0.22, green: 0.55, blue: 1.0)
+        case .debito:   return Color(red: 0.28, green: 0.78, blue: 0.58)
+        case .pix:      return Color(red: 0.25, green: 0.72, blue: 0.65)
+        case .dinheiro: return Color(red: 0.42, green: 0.75, blue: 0.35)
+        case .outro:    return Color(red: 0.65, green: 0.55, blue: 0.85)
+        case nil:       return .secondary
+        }
+    }
+
+    private var paymentIcon: String {
+        switch paymentType {
+        case .credito:  return "creditcard.fill"
+        case .debito:   return "creditcard"
+        case .pix:      return "qrcode"
+        case .dinheiro: return "banknote.fill"
+        case .outro:    return "ellipsis.circle.fill"
+        case nil:       return "questionmark.circle"
+        }
+    }
 
     var body: some View {
-        let transactionId = transaction.id != nil ? String(transaction.id!) : ""
-        var transactionValue: Double? {
-            guard let cents = transaction.amount_cents else { return nil }
-            return Double(cents) / 100.0
-        }
-        GlassEffectContainer {
-            HStack{
-                Text("#\(transactionId)")
-                    .frame(alignment: .leading)
-                    .padding()
-                    .glassEffect()
-                    .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
+        HStack(spacing: 12) {
 
-                Text(transaction.name)
-                    .frame(alignment: .leading)
-                    .padding()
-                    .glassEffect()
-                    .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
+            // ── Ícone do tipo de pagamento ──────────────────────────
+            ZStack {
+                Circle()
+                    .fill(paymentColor.opacity(0.15))
+                    .frame(width: 40, height: 40)
 
-                Spacer()
-
-                if (transactionValue != nil) {
-                    Text("R$ \(transactionValue!, specifier: "%.2f")")
-                        .frame(alignment: .trailing)
-                        .padding()
-                        .padding(.trailing, isHovered ? 40 : 0)
-                        .glassEffect()
-                        .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
-                } else {
-                    Text("N/A")
-                        .frame(alignment: .trailing)
-                        .padding()
-                        .padding(.trailing, isHovered ? 40 : 0)
-                        .glassEffect()
-                        .glassEffectUnion(id: "id-\(transactionId)", namespace: namespace)
-                }
+                Image(systemName: paymentIcon)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(paymentColor)
             }
-            .contentShape(Rectangle())
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .overlay(alignment: .trailing) {
-                Button() {
+
+            // ── Nome e ID ───────────────────────────────────────────
+            VStack(alignment: .leading, spacing: 2) {
+                Text(transaction.name)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+
+                Text("#\(transactionId)")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.tertiary)
+            }
+
+            Spacer()
+
+            // ── Valor ───────────────────────────────────────────────
+            if let value = transactionValue {
+                Text(value, format: .currency(code: "BRL"))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundStyle(.primary)
+            } else {
+                Text("N/A")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.tertiary)
+            }
+
+            // ── Botão deletar ───────────────────────────────────────
+            if isHovered {
+                Button {
                     onDelete(transaction)
                 } label: {
                     Image(systemName: "trash")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(isHoveredDel ? .red : .secondary)
+                        .padding(8)
                 }
-                .background(isHoveredDel ? Color.red : Color.clear)
-                .foregroundColor(colorScheme == .light ? Color.black : Color.white)
-                .cornerRadius(8)
-                .offset(x: isHovered ? 0 : 60)
-                .onHover { hoveringDel in
-                    isHoveredDel = hoveringDel
+                .buttonStyle(.plain)
+                .glassEffect()
+                .onHover { hovering in
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        isHoveredDel = hovering
+                    }
                 }
-                .opacity(isHovered ? 1.0 : 0.0)
-                .padding(.vertical, 2)
-                .padding(.horizontal, 12)
-                .animation(.smooth(duration: 0.15), value: isHoveredDel)
-                .buttonStyle(.glass)
+                .transition(.move(edge: .trailing).combined(with: .opacity))
             }
-            .animation(.smooth(duration: 0.15), value: isHovered)
-            .onHover { hovering in
-                isHovered = hovering
-            }
-            .onTapGesture {
-                isShowingAlert = true
-            }
-            .sheet(isPresented: $isShowingAlert) {
-                TransactionDetailView(transaction: transaction)
-                    .environmentObject(supabase)
-            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(isHovered ? Color.primary.opacity(0.04) : Color.clear)
+        )
+        .contentShape(RoundedRectangle(cornerRadius: 12))
+        .animation(.smooth(duration: 0.15), value: isHovered)
+        .onHover { hovering in isHovered = hovering }
+        .onTapGesture { isShowingDetail = true }
+        .sheet(isPresented: $isShowingDetail) {
+            TransactionDetailView(transaction: transaction)
+                .environmentObject(supabase)
         }
     }
 }
