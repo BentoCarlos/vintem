@@ -145,6 +145,7 @@ struct NewTransactionView: View {
                                     isSelected: tipoPagamento == type,
                                     color: paymentColor
                                 )
+                                .contentShape(Rectangle())
                                 .onTapGesture {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                         tipoPagamento = type
