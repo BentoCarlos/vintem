@@ -135,11 +135,13 @@ struct ContentView: View {
             }
             .searchable(text: $searchText, prompt: "Buscar transação...")
             .navigationTitle("Meu Dinheiro")
-            .overlay(alignment: .bottomTrailing) {
-                AddTransactionButton {
-                    showAddTransactionSheet.toggle()
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button(action: { showAddTransactionSheet.toggle() }) {
+                        Label("Nova Transação", systemImage: "plus.circle.fill")
+                    }
+                    .buttonStyle(.glass)
                 }
-                .padding(20)
             }
             .sheet(isPresented: $showAddTransactionSheet) {
                 NewTransactionView()
