@@ -312,12 +312,14 @@ struct NewTransactionView: View {
 
             for i in 1...Int(installments) {
                 var newInstallment: Installment {
-                    return Installment(transaction_id: newTransactionId!,
-                                portion: i,
-                                total_portions: Int(installments),
-                                payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
-                                created_at: Date.now,
-                                updated_at: Date.now
+                    return Installment(
+                        id: nil,
+                        transaction_id: newTransactionId!,
+                        portion: i,
+                        total_portions: Int(installments),
+                        payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
+                        created_at: Date.now,
+                        updated_at: Date.now
                     )
                 }
 

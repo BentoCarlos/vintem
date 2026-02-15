@@ -14,7 +14,43 @@ import SwiftUI
 class SupabaseManager: ObservableObject {
     @Published var client = SupabaseClient(
         supabaseURL: URL(string: ProcessInfo.processInfo.environment["SUPABASE_DB_URL"]!)!,
-        supabaseKey: ProcessInfo.processInfo.environment["SUPABASE_DB_KEY"]!
+        supabaseKey: ProcessInfo.processInfo.environment["SUPABASE_DB_KEY"]!,
+        options: SupabaseClientOptions(
+            db: .init(
+                decoder: {
+                    let decoder = JSONDecoder()
+                    // ✅ aceita múltiplos formatos de data
+                    decoder.dateDecodingStrategy = .custom { decoder in
+                        let container = try decoder.singleValueContainer()
+                        let dateString = try container.decode(String.self)
+
+                        let formats = [
+                            "yyyy-MM-dd",                       // 2026-02-14
+                            "yyyy-MM-dd'T'HH:mm:ss",            // 2026-02-14T00:00:00
+                            "yyyy-MM-dd'T'HH:mm:ssZ",           // 2026-02-14T00:00:00Z
+                            "yyyy-MM-dd'T'HH:mm:ss.SS",         // 2026-02-14T21:06:55.58 (2 dígitos)
+                            "yyyy-MM-dd'T'HH:mm:ss.SSS",        // 2026-02-14T21:06:55.580 (3 dígitos)
+                            "yyyy-MM-dd'T'HH:mm:ss.SSSZ",       // com timezone
+                            "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",     // microsegundos (6 dígitos)
+                            "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"     // microsegundos com timezone
+                        ]
+                        let formatter = DateFormatter()
+                        for format in formats {
+                            formatter.dateFormat = format
+                            if let date = formatter.date(from: dateString) {
+                                return date
+                            }
+                        }
+
+                        throw DecodingError.dataCorruptedError(
+                            in: container,
+                            debugDescription: "Invalid date format: \(dateString)"
+                        )
+                    }
+                    return decoder
+                }()
+            )
+        )
     )
     @Published var transactionsDB: [Transaction] = []
     @Published var loadingData: Bool = true

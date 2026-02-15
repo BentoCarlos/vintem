@@ -22,7 +22,10 @@ struct TransactionDetailView: View {
     @State var transactionPaymentType: PaymentType
 
     @State private var isUpdating = false
+    @State private var isLoading = true
     @State private var appeared = false
+    @State private var installments: [Installment] = []
+    @State private var scrollProxy: ScrollViewProxy? = nil
 
     init(transaction: Transaction) {
         _transaction = State(initialValue: transaction)
@@ -57,20 +60,15 @@ struct TransactionDetailView: View {
 
     var body: some View {
         ZStack {
-            // Fundo com gradiente animado baseado no tipo de pagamento
+            // Fundo com gradiente animado
             LinearGradient(
-                colors: [
-                    paymentColor.opacity(0.35),
-                    paymentColor.opacity(0.1),
-                    Color.clear
-                ],
+                colors: [paymentColor.opacity(0.35), paymentColor.opacity(0.1), Color.clear],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
             .animation(.easeInOut(duration: 0.5), value: transactionPaymentType)
 
-            // Círculos decorativos de fundo
             Circle()
                 .fill(paymentColor.opacity(0.15))
                 .frame(width: 280)
@@ -85,155 +83,251 @@ struct TransactionDetailView: View {
                 .offset(x: -100, y: 100)
                 .animation(.easeInOut(duration: 0.5), value: transactionPaymentType)
 
-            VStack(spacing: 0) {
+            // ── Loading ──────────────────────────────────────────────
+            if isLoading {
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(paymentColor.opacity(0.15))
+                            .frame(width: 64, height: 64)
 
-                // ── Header ──────────────────────────────────────────
-                VStack(spacing: 20) {
-
-                    // ID badge + tipo badge
-                    HStack {
-                        Text("Transação #\(transactionId)")
-                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .glassEffect(in: Capsule())
-
-                        Spacer()
-
-                        HStack(spacing: 5) {
-                            Image(systemName: paymentIcon)
-                                .font(.system(size: 11, weight: .bold))
-                            Text(transactionPaymentType.rawValue)
-                                .font(.system(size: 11, weight: .bold))
-                                .textCase(.uppercase)
-                                .tracking(0.8)
-                        }
-                        .foregroundStyle(paymentColor)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .glassEffect(in: Capsule())
-                        .animation(.easeInOut(duration: 0.3), value: transactionPaymentType)
+                        ProgressView()
+                            .scaleEffect(1.1)
+                            .tint(paymentColor)
                     }
 
-                    // Valor em destaque editável
-                    VStack(spacing: 4) {
-                        Text("Valor")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.8)
-
-                        TextField(
-                            "R$ 0,00",
-                            value: $transactionValue,
-                            format: .currency(code: "BRL")
-                        )
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .foregroundStyle(.primary)
-                        .multilineTextAlignment(.center)
-                        .textFieldStyle(.plain)
-                    }
-                    .padding(.vertical, 20)
-                    .frame(maxWidth: .infinity)
-                    .glassEffect(in: RoundedRectangle(cornerRadius: 20))
+                    Text("Carregando transação...")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.secondary)
                 }
-                .padding(20)
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : -16)
-                .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.05), value: appeared)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.opacity.animation(.easeOut(duration: 0.2)))
 
-                // ── Campos de edição ─────────────────────────────────
-                VStack(spacing: 12) {
+            } else {
+                // ── Conteúdo principal ───────────────────────────────
+                ScrollView {
+                    VStack(spacing: 0) {
 
-                    // Nome
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("Nome", systemImage: "pencil")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.6)
+                        // ── Header ───────────────────────────────────
+                        VStack(spacing: 20) {
+                            HStack {
+                                Text("Transação #\(transactionId)")
+                                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .glassEffect(in: Capsule())
 
-                        TextField("Nome da transação", text: $transactionName)
-                            .font(.system(size: 15, weight: .medium))
-                            .textFieldStyle(.plain)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .glassEffect(in: RoundedRectangle(cornerRadius: 12))
-                    }
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 10)
-                    .animation(.spring(response: 0.5).delay(0.1), value: appeared)
+                                Spacer()
 
-                    // Tipo de pagamento
-                    VStack(alignment: .leading, spacing: 8) {
-                        Label("Forma de Pagamento", systemImage: "creditcard")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.6)
+                                HStack(spacing: 5) {
+                                    Image(systemName: paymentIcon)
+                                        .font(.system(size: 11, weight: .bold))
+                                    Text(transactionPaymentType.rawValue)
+                                        .font(.system(size: 11, weight: .bold))
+                                        .textCase(.uppercase)
+                                        .tracking(0.8)
+                                }
+                                .foregroundStyle(paymentColor)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .glassEffect(in: Capsule())
+                                .animation(.easeInOut(duration: 0.3), value: transactionPaymentType)
+                            }
 
-                        HStack(spacing: 8) {
-                            ForEach(PaymentType.allCases, id: \.self) { type in
-                                PaymentTypeChip(
-                                    type: type,
-                                    isSelected: transactionPaymentType == type,
-                                    color: paymentColor
+                            // Valor — altura fixa para evitar resize no foco
+                            VStack(spacing: 4) {
+                                Text("Valor")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.8)
+
+                                TextField(
+                                    "R$ 0,00",
+                                    value: $transactionValue,
+                                    format: .currency(code: "BRL")
                                 )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        transactionPaymentType = type
+                                .font(.system(size: 40, weight: .bold, design: .rounded))
+                                .foregroundStyle(.primary)
+                                .multilineTextAlignment(.center)
+                                .textFieldStyle(.plain)
+                                .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.vertical, 20)
+                            .frame(maxWidth: .infinity, minHeight: 110)
+                            .glassEffect(in: RoundedRectangle(cornerRadius: 20))
+                        }
+                        .padding(20)
+                        .opacity(appeared ? 1 : 0)
+                        .offset(y: appeared ? 0 : -12)
+                        .animation(.spring(response: 0.5, dampingFraction: 0.85).delay(0.05), value: appeared)
+
+                        // ── Campos de edição ─────────────────────────
+                        VStack(spacing: 12) {
+
+                            // Nome
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Nome", systemImage: "pencil")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.6)
+
+                                TextField("Nome da transação", text: $transactionName)
+                                    .font(.system(size: 15, weight: .medium))
+                                    .textFieldStyle(.plain)
+                                    .lineLimit(1)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 12)
+                                    .glassEffect(in: RoundedRectangle(cornerRadius: 12))
+                            }
+                            .opacity(appeared ? 1 : 0)
+                            .offset(y: appeared ? 0 : 10)
+                            .animation(.spring(response: 0.5).delay(0.1), value: appeared)
+
+                            // Tipo de pagamento
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label("Forma de Pagamento", systemImage: "creditcard")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .textCase(.uppercase)
+                                    .tracking(0.6)
+
+                                HStack(spacing: 8) {
+                                    ForEach(PaymentType.allCases, id: \.self) { type in
+                                        PaymentTypeChip(
+                                            type: type,
+                                            isSelected: transactionPaymentType == type,
+                                            color: paymentColor
+                                        )
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                transactionPaymentType = type
+                                            }
+                                        }
                                     }
                                 }
+                                .padding(6)
+                                .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                            }
+                            .opacity(appeared ? 1 : 0)
+                            .offset(y: appeared ? 0 : 10)
+                            .animation(.spring(response: 0.5).delay(0.15), value: appeared)
+
+                            // Parcelas
+                            if !installments.isEmpty {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Label("Parcelas", systemImage: "creditcard.and.numbers")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                        .textCase(.uppercase)
+                                        .tracking(0.6)
+
+                                    ScrollViewReader { proxy in
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 8) {
+                                                ForEach(installments) { installment in
+                                                    let isCurrent = Calendar.current.isDate(
+                                                        installment.payment_date,
+                                                        equalTo: .now,
+                                                        toGranularity: .month
+                                                    )
+                                                    InstallmentChip(
+                                                        portion: installment.portion,
+                                                        total: installment.total_portions,
+                                                        value: Double(transaction.amount_cents ?? 0) / 100.0,
+                                                        dueDate: installment.payment_date,
+                                                        color: paymentColor,
+                                                        isCurrentInstallment: isCurrent
+                                                    )
+                                                    .id(installment.id)
+                                                }
+                                            }
+                                            .padding(.horizontal, 2)
+                                            .padding(.vertical, 4)
+                                        }
+                                        .onAppear { scrollProxy = proxy }
+                                    }
+                                }
+                                .padding(14)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                                .opacity(appeared ? 1 : 0)
+                                .offset(y: appeared ? 0 : 10)
+                                .animation(.spring(response: 0.5).delay(0.2), value: appeared)
                             }
                         }
-                        .padding(6)
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 20)
                     }
-                    .opacity(appeared ? 1 : 0)
-                    .offset(y: appeared ? 0 : 10)
-                    .animation(.spring(response: 0.5).delay(0.15), value: appeared)
-                }
-                .padding(.horizontal, 20)
 
-                Spacer()
+                    Spacer(minLength: 80)
+                }
 
                 // ── Botões ───────────────────────────────────────────
-                HStack(spacing: 12) {
-                    Button("Cancelar") {
-                        dismiss()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.glassProminent)
-                    .tint(.secondary)
+                VStack {
+                    Spacer()
+                    HStack(spacing: 12) {
+                        Button("Cancelar") { dismiss() }
+                            .frame(maxWidth: .infinity)
+                            .buttonStyle(.glassProminent)
+                            .tint(.secondary)
 
-                    Button(action: saveTransaction) {
-                        HStack(spacing: 6) {
-                            if isUpdating {
-                                ProgressView()
-                                    .scaleEffect(0.75)
-                                    .tint(.white)
-                            } else {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 13, weight: .bold))
+                        Button(action: saveTransaction) {
+                            HStack(spacing: 6) {
+                                if isUpdating {
+                                    ProgressView()
+                                        .scaleEffect(0.75)
+                                        .tint(.white)
+                                } else {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 13, weight: .bold))
+                                }
+                                Text(isUpdating ? "Salvando..." : "Salvar")
+                                    .font(.system(size: 14, weight: .semibold))
                             }
-                            Text(isUpdating ? "Salvando..." : "Salvar")
-                                .font(.system(size: 14, weight: .semibold))
                         }
+                        .frame(maxWidth: .infinity)
+                        .buttonStyle(.glassProminent)
+                        .tint(paymentColor)
+                        .disabled(isUpdating || transactionName.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
-                    .frame(maxWidth: .infinity)
-                    .buttonStyle(.glassProminent)
-                    .tint(paymentColor)
-                    .disabled(isUpdating || transactionName.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .padding(20)
+                    .opacity(appeared ? 1 : 0)
+                    .animation(.spring(response: 0.5).delay(0.25), value: appeared)
                 }
-                .padding(20)
+                .transition(.opacity.animation(.easeIn(duration: 0.2)))
             }
         }
         .frame(width: 400)
         .onAppear {
-            withAnimation {
-                appeared = true
+            Task {
+                // Carrega dados primeiro, mostra depois
+                installments = (try? await supabase.installments.fetchTransactionInstallments(for: transaction.id!)) ?? []
+
+                withAnimation(.spring(response: 0.5)) {
+                    isLoading = false
+                }
+
+                try? await Task.sleep(for: .milliseconds(50))
+
+                withAnimation(.spring(response: 0.5)) {
+                    appeared = true
+                }
+
+                // Scroll para parcela atual
+                try? await Task.sleep(for: .milliseconds(200))
+
+                if let current = installments.first(where: {
+                    Calendar.current.isDate($0.payment_date, equalTo: .now, toGranularity: .month)
+                }) {
+                    withAnimation(.spring(response: 0.6)) {
+                        scrollProxy?.scrollTo(current.id, anchor: .center)
+                    }
+                }
             }
         }
     }
@@ -251,7 +345,6 @@ struct TransactionDetailView: View {
                 )
 
                 try await supabase.transactions.update(for: transaction.id!, updatedTransaction: updated)
-
                 await supabase.refreshTransactions()
                 dismiss()
             } catch {
@@ -262,7 +355,7 @@ struct TransactionDetailView: View {
     }
 }
 
-// ── Chip de tipo de pagamento ─────────────────────────────────────────
+// ── PaymentTypeChip ───────────────────────────────────────────────────
 
 struct PaymentTypeChip: View {
     let type: PaymentType
@@ -295,17 +388,60 @@ struct PaymentTypeChip: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(
-            isSelected
-                ? color.opacity(0.15)
-                : Color.clear
-        )
+        .background(isSelected ? color.opacity(0.15) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(isSelected ? color.opacity(0.4) : Color.clear, lineWidth: 1.5)
         )
         .animation(.spring(response: 0.3), value: isSelected)
+    }
+}
+
+// ── InstallmentChip ───────────────────────────────────────────────────
+
+struct InstallmentChip: View {
+    var portion: Int
+    var total: Int
+    var value: Double
+    var dueDate: Date
+    var color: Color
+    var isCurrentInstallment: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 4) {
+                Text("\(portion)")
+                    .font(.system(size: 20, weight: .heavy, design: .rounded))
+                    .foregroundStyle(color)
+
+                Text("/ \(total)")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(color.opacity(0.5))
+            }
+
+            Divider()
+                .overlay(color.opacity(0.2))
+
+            Text(dueDate, style: .date)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            Text(value, format: .currency(code: "BRL"))
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundStyle(.primary)
+        }
+        .padding(12)
+        .frame(minWidth: 100)
+        .background(isCurrentInstallment ? color.opacity(0.25) : color.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(
+                    isCurrentInstallment ? color.opacity(0.6) : color.opacity(0.25),
+                    lineWidth: isCurrentInstallment ? 2 : 1.5
+                )
+        )
     }
 }
 
@@ -317,4 +453,5 @@ struct PaymentTypeChip: View {
         payment_type: PaymentTypeDB(name: "Crédito")
     )
     TransactionDetailView(transaction: transaction)
+        .environmentObject(SupabaseManager())
 }

@@ -8,7 +8,8 @@
 import SwiftUI
 import Supabase
 
-struct Installment: Encodable {
+struct Installment: Codable, Identifiable {
+    let id: Int?
     let transaction_id: Int
     let portion: Int
     let total_portions: Int
@@ -22,6 +23,15 @@ class InstallmentRepository {
 
     init(client: SupabaseClient) {
         self.client = client
+    }
+
+    func fetchTransactionInstallments(for transactionId: Int) async throws -> [Installment] {
+        return try await client
+                .from("installments")
+                .select()
+                .eq("transaction_id", value: transactionId)
+                .execute()
+                .value
     }
 
     func insert(for id: Int, newInstallment: Installment) async {
