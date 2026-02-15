@@ -49,205 +49,212 @@ struct NewTransactionView: View {
         }
     }
 
+    private var installmentValue: String {
+        guard let totalValue = valor else { return "" }
+        return (totalValue / installments).formatted(.currency(code: Locale.current.currency?.identifier ?? "BRL"))
+    }
+
     var body: some View {
         ZStack {
-            // Fundo gradiente animado
+            // Fundo
             LinearGradient(
-                colors: [paymentColor.opacity(0.3), paymentColor.opacity(0.05), Color.clear],
+                colors: [paymentColor.opacity(0.25), Color.clear],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            .animation(.easeInOut(duration: 0.5), value: tipoPagamento)
+            .animation(.easeInOut(duration: 0.4), value: tipoPagamento)
 
-            // Círculos decorativos
             Circle()
-                .fill(paymentColor.opacity(0.12))
-                .frame(width: 250)
-                .blur(radius: 40)
-                .offset(x: 130, y: -80)
-                .animation(.easeInOut(duration: 0.5), value: tipoPagamento)
+                .fill(paymentColor.opacity(0.1))
+                .frame(width: 300)
+                .blur(radius: 60)
+                .offset(x: 150, y: -100)
+                .animation(.easeInOut(duration: 0.4), value: tipoPagamento)
 
             VStack(spacing: 0) {
 
-                // ── Header ───────────────────────────────────────────
-                VStack(spacing: 6) {
-                    ZStack {
-                        Circle()
-                            .fill(paymentColor.opacity(0.15))
-                            .frame(width: 56, height: 56)
+                // ── Header bold ───────────────────────────────────────
+                HStack(alignment: .center) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("NOVA")
+                            .font(.system(size: 11, weight: .heavy))
+                            .foregroundStyle(paymentColor)
+                            .tracking(3)
+                        Text("Transação")
+                            .font(.system(size: 26, weight: .black))
+                            .foregroundStyle(.primary)
+                    }
 
+                    Spacer()
+
+                    // Ícone animado do tipo de pagamento
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(paymentColor.opacity(0.15))
+                            .frame(width: 52, height: 52)
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(paymentColor.opacity(0.3), lineWidth: 1.5)
+                            .frame(width: 52, height: 52)
                         Image(systemName: paymentIcon)
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundStyle(paymentColor)
                     }
-                    .animation(.spring(response: 0.4), value: tipoPagamento)
-
-                    Text("Nova Transação")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(.primary)
+                    .animation(.spring(response: 0.35), value: tipoPagamento)
                 }
+                .padding(.horizontal, 24)
                 .padding(.top, 28)
-                .padding(.bottom, 24)
+                .padding(.bottom, 20)
                 .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : -10)
+                .offset(y: appeared ? 0 : -8)
                 .animation(.spring(response: 0.5).delay(0.05), value: appeared)
 
-                // ── Campos ───────────────────────────────────────────
-                VStack(spacing: 14) {
+                // ── Dois campos lado a lado ───────────────────────────
+                HStack(spacing: 10) {
+                    // Título
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("TÍTULO")
+                            .font(.system(size: 9, weight: .heavy))
+                            .foregroundStyle(paymentColor.opacity(0.8))
+                            .tracking(2)
 
-                    // Valor em destaque
-                    VStack(spacing: 6) {
-                        Text("Valor")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.8)
+                        TextField("Ex: Mercado", text: $titulo)
+                            .font(.system(size: 15, weight: .semibold))
+                            .textFieldStyle(.plain)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
 
-                        TextField("R$ 0,00", value: $valor, format: .currency(code: "BRL"))
-                            .font(.system(size: 36, weight: .bold, design: .rounded))
+                    // Valor
+                    VStack(alignment: .center, spacing: 6) {
+                        Text("VALOR")
+                            .font(.system(size: 9, weight: .heavy))
+                            .foregroundStyle(paymentColor.opacity(0.8))
+                            .tracking(2)
+
+                        TextField("0,00", value: $valor, format: .currency(code: "BRL"))
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
                             .foregroundStyle(valor != nil && valor! > 0 ? .primary : .tertiary)
                             .multilineTextAlignment(.center)
                             .textFieldStyle(.plain)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-                    .glassEffect(in: RoundedRectangle(cornerRadius: 16))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 14)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                }
+                .padding(.horizontal, 20)
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 10)
+                .animation(.spring(response: 0.5).delay(0.08), value: appeared)
 
-                    // Nome
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label("Título", systemImage: "pencil")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.6)
+                // ── Tipo de pagamento ─────────────────────────────────
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("PAGAMENTO")
+                        .font(.system(size: 9, weight: .heavy))
+                        .foregroundStyle(paymentColor.opacity(0.8))
+                        .tracking(2)
+                        .padding(.horizontal, 2)
 
-                        TextField("Ex: Compra Mensal", text: $titulo)
-                            .font(.system(size: 15, weight: .medium))
-                            .textFieldStyle(.plain)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .glassEffect(in: RoundedRectangle(cornerRadius: 12))
-                    }
-
-                    // Tipo de pagamento
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label("Forma de Pagamento", systemImage: "creditcard")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.6)
-
-                        HStack(spacing: 6) {
-                            ForEach(PaymentType.allCases, id: \.self) { type in
-                                PaymentTypeChip(
-                                    type: type,
-                                    isSelected: tipoPagamento == type,
-                                    color: paymentColor
-                                )
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        tipoPagamento = type
-                                    }
+                    HStack(spacing: 6) {
+                        ForEach(PaymentType.allCases, id: \.self) { type in
+                            PaymentTypeChip(
+                                type: type,
+                                isSelected: tipoPagamento == type,
+                                color: paymentColor
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    tipoPagamento = type
                                 }
                             }
                         }
-                        .padding(6)
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 14))
                     }
+                    .padding(6)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 10)
+                .animation(.spring(response: 0.5).delay(0.11), value: appeared)
 
-                    // Parcelas
-                    VStack(alignment: .leading, spacing: 6) {
-                        Label("Parcelas", systemImage: "creditcard.and.numbers")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.6)
+                // ── Parcelas ──────────────────────────────────────────
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("PARCELAS")
+                        .font(.system(size: 9, weight: .heavy))
+                        .foregroundStyle(paymentColor.opacity(0.8))
+                        .tracking(2)
+                        .padding(.horizontal, 2)
 
-                        VStack(spacing: 8) {
-                            var installmentValue: String {
-                                var returnValue = ""
-
-                                if let totalValue = valor {
-                                    returnValue = String((totalValue / installments).formatted(.currency(code: Locale.current.currency?.identifier ?? "BRL")))
-                                }
-
-                                return returnValue
-                            }
-
-                            // Número de parcelas
-                            Text("\(Int(installments))x \(installments == 1 ? "(À vista)" : installmentValue)")
-                                .fontWeight(.bold)
-                                .font(.title)
-                                .foregroundStyle(.primary)
+                    VStack(spacing: 10) {
+                        // Número + valor por parcela
+                        HStack(alignment: .lastTextBaseline) {
+                            Text("\(Int(installments))x")
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .foregroundStyle(paymentColor)
                                 .contentTransition(.numericText())
                                 .animation(.bouncy, value: installments)
-                                .frame(maxWidth: .infinity, alignment: .center)
 
-                            // Slider com botões
-                            HStack(alignment: .center, spacing: 8) {
-                                Button(action: {
-                                    if installments > 1 { installments -= 1 }
-                                }) {
-                                    Image(systemName: "minus")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(paymentColor)
-                                        .padding(8)
-                                }
-                                .buttonStyle(.glass)
-
-                                Slider(value: $installments, in: 1...24, step: 1)
-                                    .tint(paymentColor)
-
-                                Button(action: {
-                                    if installments < 24 { installments += 1 }
-                                }) {
-                                    Image(systemName: "plus")
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .foregroundStyle(paymentColor)
-                                        .padding(8)
-                                }
-                                .buttonStyle(.glass)
+                            if installments == 1 || !installmentValue.isEmpty {
+                                Text(installments == 1 ? "à vista" : "de \(installmentValue)")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .contentTransition(.interpolate)
+                                    .animation(.bouncy, value: installments)
                             }
+                            
+                            Spacer()
 
-                            Divider()
-
-                            // Vencimento
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Vencimento")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(.secondary)
-                                        .textCase(.uppercase)
-                                        .tracking(0.5)
-
-                                    if installments > 1 {
-                                        Text("1ª parcela")
-                                            .font(.system(size: 10, weight: .medium))
-                                            .foregroundStyle(.tertiary)
-                                    }
-                                }
-
-                                Spacer()
-
+                            // Vencimento compacto
+                            HStack(spacing: 6) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(paymentColor)
                                 DatePicker("", selection: $selectedDate, displayedComponents: .date)
                                     .datePickerStyle(.compact)
                                     .labelsHidden()
                             }
                         }
-                        .padding(16)
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 14))
-                    }                }
+
+                        // Slider com botões
+                        HStack(spacing: 8) {
+                            Button(action: { if installments > 1 { installments -= 1 } }) {
+                                Image(systemName: "minus")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(paymentColor)
+                                    .padding(8)
+                            }
+                            .buttonStyle(.glass)
+
+                            Slider(value: $installments, in: 1...24, step: 1)
+                                .tint(paymentColor)
+
+                            Button(action: { if installments < 24 { installments += 1 } }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(paymentColor)
+                                    .padding(8)
+                            }
+                            .buttonStyle(.glass)
+                        }
+                    }
+                    .padding(14)
+                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                }
                 .padding(.horizontal, 20)
+                .padding(.top, 10)
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 10)
-                .animation(.spring(response: 0.5).delay(0.1), value: appeared)
+                .animation(.spring(response: 0.5).delay(0.14), value: appeared)
 
                 Spacer()
 
-                // ── Botões ───────────────────────────────────────────
-                HStack(spacing: 12) {
+                // ── Botões ────────────────────────────────────────────
+                HStack(spacing: 10) {
                     Button("Cancelar") { dismiss() }
                         .keyboardShortcut(.cancelAction)
                         .frame(maxWidth: .infinity)
@@ -257,15 +264,13 @@ struct NewTransactionView: View {
                     Button(action: { Task { await saveTransaction() } }) {
                         HStack(spacing: 6) {
                             if isSaving {
-                                ProgressView()
-                                    .scaleEffect(0.75)
-                                    .tint(.white)
+                                ProgressView().scaleEffect(0.75).tint(.white)
                             } else {
                                 Image(systemName: "plus")
                                     .font(.system(size: 13, weight: .bold))
                             }
                             Text(isSaving ? "Salvando..." : "Adicionar")
-                                .font(.system(size: 14, weight: .semibold))
+                                .font(.system(size: 14, weight: .bold))
                         }
                     }
                     .keyboardShortcut(.defaultAction)
@@ -276,7 +281,7 @@ struct NewTransactionView: View {
                 }
                 .padding(20)
                 .opacity(appeared ? 1 : 0)
-                .animation(.spring(response: 0.5).delay(0.15), value: appeared)
+                .animation(.spring(response: 0.5).delay(0.18), value: appeared)
             }
         }
         .frame(width: 420)
@@ -306,24 +311,21 @@ struct NewTransactionView: View {
 
             let newTransactionId: Int? = await supabase.transactions.insert(newTransaction: newTransaction)
 
-            if (newTransactionId == nil) {
+            guard let newTransactionId else {
                 throw TransactionError.newTransaction(message: "Erro ao recuperar o id da nova transação")
             }
 
             for i in 1...Int(installments) {
-                var newInstallment: Installment {
-                    return Installment(
-                        id: nil,
-                        transaction_id: newTransactionId!,
-                        portion: i,
-                        total_portions: Int(installments),
-                        payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
-                        created_at: Date.now,
-                        updated_at: Date.now
-                    )
-                }
-
-                await supabase.installments.insert(for: newTransactionId!, newInstallment: newInstallment)
+                let newInstallment = Installment(
+                    id: nil,
+                    transaction_id: newTransactionId,
+                    portion: i,
+                    total_portions: Int(installments),
+                    payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
+                    created_at: Date.now,
+                    updated_at: Date.now
+                )
+                await supabase.installments.insert(for: newTransactionId, newInstallment: newInstallment)
             }
 
             await supabase.refreshTransactions()
