@@ -16,13 +16,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		DC7E111B2EE7ADC2007081AB /* meudindin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = meudindin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC7E111B2EE7ADC2007081AB /* vintem.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vintem.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DC7E111D2EE7ADC2007081AB /* meudindin */ = {
+		DC7E111D2EE7ADC2007081AB /* vintem */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = meudindin;
+			path = vintem;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -54,7 +54,7 @@
 		DC7E11122EE7ADC2007081AB = {
 			isa = PBXGroup;
 			children = (
-				DC7E111D2EE7ADC2007081AB /* meudindin */,
+				DC7E111D2EE7ADC2007081AB /* vintem */,
 				DC261A932F0C91BC00851335 /* Frameworks */,
 				DC7E111C2EE7ADC2007081AB /* Products */,
 			);
@@ -63,7 +63,7 @@
 		DC7E111C2EE7ADC2007081AB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				DC7E111B2EE7ADC2007081AB /* meudindin.app */,
+				DC7E111B2EE7ADC2007081AB /* vintem.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -71,9 +71,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		DC7E111A2EE7ADC2007081AB /* meudindin */ = {
+		DC7E111A2EE7ADC2007081AB /* vintem */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = DC7E11262EE7ADC3007081AB /* Build configuration list for PBXNativeTarget "meudindin" */;
+			buildConfigurationList = DC7E11262EE7ADC3007081AB /* Build configuration list for PBXNativeTarget "vintem" */;
 			buildPhases = (
 				DC7E11172EE7ADC2007081AB /* Sources */,
 				DC7E11182EE7ADC2007081AB /* Frameworks */,
@@ -84,9 +84,9 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				DC7E111D2EE7ADC2007081AB /* meudindin */,
+				DC7E111D2EE7ADC2007081AB /* vintem */,
 			);
-			name = meudindin;
+			name = vintem;
 			packageProductDependencies = (
 				DC261A942F0C91BC00851335 /* Auth */,
 				DC261A962F0C91BC00851335 /* Functions */,
@@ -96,7 +96,7 @@
 				DC261A9E2F0C91BC00851335 /* Supabase */,
 			);
 			productName = meudindin;
-			productReference = DC7E111B2EE7ADC2007081AB /* meudindin.app */;
+			productReference = DC7E111B2EE7ADC2007081AB /* vintem.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -114,7 +114,7 @@
 					};
 				};
 			};
-			buildConfigurationList = DC7E11162EE7ADC2007081AB /* Build configuration list for PBXProject "meudindin" */;
+			buildConfigurationList = DC7E11162EE7ADC2007081AB /* Build configuration list for PBXProject "vintem" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -131,7 +131,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				DC7E111A2EE7ADC2007081AB /* meudindin */,
+				DC7E111A2EE7ADC2007081AB /* vintem */,
 			);
 		};
 /* End PBXProject section */
@@ -312,7 +312,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bento.meudindin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bento.vintem;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -355,7 +355,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bento.meudindin;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bento.vintem;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -370,7 +370,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		DC7E11162EE7ADC2007081AB /* Build configuration list for PBXProject "meudindin" */ = {
+		DC7E11162EE7ADC2007081AB /* Build configuration list for PBXProject "vintem" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC7E11242EE7ADC3007081AB /* Debug */,
@@ -379,7 +379,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		DC7E11262EE7ADC3007081AB /* Build configuration list for PBXNativeTarget "meudindin" */ = {
+		DC7E11262EE7ADC3007081AB /* Build configuration list for PBXNativeTarget "vintem" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DC7E11272EE7ADC3007081AB /* Debug */,
