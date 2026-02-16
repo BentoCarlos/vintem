@@ -38,52 +38,35 @@ Aplicativo de controle de gastos simples, construído com SwiftUI para macOS e i
    - `SUPABASE_DB_URL` (ex.: `https://<sua-instancia>.supabase.co`)
    - `SUPABASE_DB_KEY` (chave anon ou service role para desenvolvimento local)
 
-2. Crie as tabelas com o schema abaixo:
-```sql
-create table public.transactions (
-  id bigserial not null,
-  created_at timestamp without time zone not null default now(),
-  updated_at timestamp without time zone not null default now(),
-  amount_cents integer null,
-  transaction_type_id bigint null,
-  payment_type_id bigint null,
-  name character varying null,
-  constraint transactions_pkey primary key (id),
-  constraint fk_rails_369c4e188e foreign key (payment_type_id) references payment_types (id),
-  constraint fk_rails_63d2d7b1f8 foreign key (transaction_type_id) references transaction_types (id)
-);
-
-create table public.transaction_types (
-  id bigserial not null,
-  name character varying null,
-  created_at timestamp without time zone not null,
-  updated_at timestamp without time zone not null,
-  constraint transaction_types_pkey primary key (id)
-);
-
-create table public.payment_types (
-  id bigserial not null,
-  name character varying null,
-  created_at timestamp without time zone not null default now(),
-  updated_at timestamp without time zone not null default now(),
-  constraint payment_types_pkey primary key (id),
-  constraint payment_types_name_key unique (name)
-);
-
-create table public.installments (
-  id bigserial not null,
-  transaction_id bigint not null,
-  portion integer not null,
-  total_portions integer not null,
-  payment_date date not null,
-  created_at timestamp without time zone not null default now(),
-  updated_at timestamp without time zone not null default now(),
-  constraint installments_pkey primary key (id),
-  constraint fk_installments_transaction foreign key (transaction_id) references transactions (id) on delete cascade
-);
+2. Inicialize o Supabase CLI no repositório (caso ainda não tenha feito):
+```bash
+supabase init
 ```
 
-3. No Xcode, configure as credenciais em `SupabaseManager.swift`:
+2. Faça login no Supabase CLI
+```bash
+supabase login
+```
+
+3. Adicione o seu projeto do Supabase ao Supabase CLI:
+```bash
+supabase link --project-ref <id_do_projeto>
+```
+
+4. Aplique a migration:
+
+   **Localmente:**
+```bash
+   supabase start
+   supabase db reset
+```
+
+   **Em produção:**
+```bash
+   supabase db push
+```
+
+5. No Xcode, configure as credenciais em `SupabaseManager.swift`:
 ```swift
 let client = SupabaseClient(
     supabaseURL: URL(string: "SUPABASE_DB_URL")!,
