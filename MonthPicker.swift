@@ -13,8 +13,23 @@ struct MonthPicker: View {
     @Binding var year: Int
     @EnvironmentObject var supabase: SupabaseManager
 
+    @State var currentMonth: Int = Calendar.current.component(.month, from: Date())
+    @State var currentYear: Int = Calendar.current.component(.year, from: Date())
+
     var body: some View {
         HStack(spacing: 12) {
+
+            Button(action: currentDate) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 32, height: 32)
+                    .contentShape(Circle())
+                    .glassEffect(in: Circle())
+            }
+            .buttonStyle(.plain)
+            .disabled(month == currentMonth && year == currentYear)
+
             Button(action: previousMonth) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 14, weight: .semibold))
@@ -76,6 +91,15 @@ struct MonthPicker: View {
             month += 1
         }
 
+        Task {
+            await supabase.filterTransactions(month: month, year: year)
+        }
+    }
+
+    func currentDate() {
+        month = currentMonth
+        year = currentYear
+        
         Task {
             await supabase.filterTransactions(month: month, year: year)
         }

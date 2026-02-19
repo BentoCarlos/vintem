@@ -68,6 +68,7 @@ struct TransactionPieChartView: View {
         }
         .chartAngleSelection(value: $selectedAngle)
         .contentShape(Circle(), eoFill: false)
+        .chartLegend(.hidden)
         .chartLegend(alignment: .center)
         .frame(minWidth: 300, minHeight: 300)
         .animation(.spring(response: 0.4, dampingFraction: 0.6), value: selectedSectorId)
@@ -82,6 +83,20 @@ struct TransactionPieChartView: View {
                 cumulative += data.totalValue
                 return newAngle >= start && newAngle < cumulative
             }?.id
+        }
+
+        HStack(spacing: 16) {
+            ForEach(chartData) { data in
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(data.type.chartColor)
+                        .frame(width: 10, height: 10)
+
+                    Text(data.type.rawValue)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 }
