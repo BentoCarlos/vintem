@@ -23,6 +23,15 @@ class TransactionRepository {
             .value
     }
 
+    func fetchByDate(month: Int, year: Int) async throws -> [Transaction] {
+        let res: [Transaction] = try await client
+            .rpc("get_transactions_by_month", params: ["par_month": month, "par_year": year])
+            .execute()
+            .value
+
+        return res
+    }
+
     func insert(newTransaction: Transaction) async -> Int? {
         do {
             struct TransactionInsert: Codable {

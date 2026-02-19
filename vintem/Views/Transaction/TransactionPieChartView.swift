@@ -15,16 +15,28 @@ struct PaymentData: Identifiable {
     var totalValue: Double
 }
 
+extension PaymentType {
+    var chartColor: Color {
+        switch self {
+        case .credito:  return Color(red: 0.22, green: 0.55, blue: 1.0)
+        case .debito:   return Color(red: 0.28, green: 0.78, blue: 0.58)
+        case .pix:      return Color(red: 0.25, green: 0.72, blue: 0.65)
+        case .dinheiro: return Color(red: 0.42, green: 0.75, blue: 0.35)
+        case .outro:    return Color(red: 0.65, green: 0.55, blue: 0.85)
+        }
+    }
+}
+
 struct TransactionPieChartView: View {
     @State private var selectedAngle: Double?
-    @State private var selectedSectorId: String?  // ✅ cache do setor selecionado
+    @State private var selectedSectorId: String?
     @EnvironmentObject var supabase: SupabaseManager
 
     private var validTransactions: [(PaymentType, Double)] {
         supabase.transactionsDB.compactMap { transaction -> (PaymentType, Double)? in
             guard let type = transaction.payment_type?.toEnum,
                   let cents = transaction.amount_cents else { return nil }
-            return (type, Double(cents) / 100.0)  // ✅ corrigido: estava cents/100 inteiro
+            return (type, Double(cents) / 100.0)
         }
     }
 
@@ -47,7 +59,7 @@ struct TransactionPieChartView: View {
                 angularInset: 1
             )
             .cornerRadius(4)
-            .foregroundStyle(by: .value("Tipo", data.type.rawValue))
+            .foregroundStyle(data.type.chartColor)
             .opacity(selectedSectorId == nil || selectedSectorId == data.id ? 1.0 : 0.5)
             .annotation(position: .overlay) {
                 Text(data.totalValue, format: .currency(code: "BRL"))
@@ -58,10 +70,8 @@ struct TransactionPieChartView: View {
         .contentShape(Circle(), eoFill: false)
         .chartLegend(alignment: .center)
         .frame(minWidth: 300, minHeight: 300)
-        // ✅ removido .drawingGroup() — causa acúmulo de layers
         .animation(.spring(response: 0.4, dampingFraction: 0.6), value: selectedSectorId)
         .onChange(of: selectedAngle) { _, newAngle in
-            // ✅ cálculo fora do body, só roda quando selectedAngle muda
             guard let newAngle else {
                 selectedSectorId = nil
                 return

@@ -13,7 +13,10 @@ struct ContentView: View {
     @EnvironmentObject var supabase: SupabaseManager
 
     @State var searchText: String = ""
+    @State var selectedDueDate: String = ""
     @State var showAddTransactionSheet: Bool = false
+    @State var selectedMonth: Int = Calendar.current.component(.month, from: Date())
+    @State var selectedYear: Int = Calendar.current.component(.year, from: Date())
 
     @Environment(\.modelContext) private var context
 
@@ -79,6 +82,9 @@ struct ContentView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+
+                    MonthPicker(month: $selectedMonth, year: $selectedYear)
+                        .environmentObject(supabase)
 
                     // Card de resumo total
                     summaryCard

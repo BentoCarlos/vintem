@@ -10,6 +10,17 @@ import Foundation
 import Combine
 import SwiftUI
 
+struct DueDate: Codable, Identifiable {
+    let id = UUID()
+    let dueMonth: Int
+    let dueYear: Int
+
+    enum CodingKeys: String, CodingKey {
+        case dueMonth = "due_month"
+        case dueYear = "due_year"
+    }
+}
+
 @MainActor
 class SupabaseManager: ObservableObject {
     @Published var client = SupabaseClient(
@@ -64,8 +75,8 @@ class SupabaseManager: ObservableObject {
         loadingData = true
 
         do {
-            let response: [Transaction] = try await transactions.fetchAll()
-            transactionsDB = response
+            let transactionsResponse: [Transaction] = try await transactions.fetchAll()
+            transactionsDB = transactionsResponse
             loadingData = false
             errorLoadingData = false
         } catch {
@@ -80,6 +91,17 @@ class SupabaseManager: ObservableObject {
     func refreshTransactions() async {
         do {
             let response: [Transaction] = try await transactions.fetchAll()
+            withAnimation(.spring(duration: 0.3)) {
+                transactionsDB = response
+            }
+        } catch {
+            print("Erro ao buscar as transações: \(error)")
+        }
+    }
+
+    func filterTransactions(month: Int, year: Int) async {
+        do {
+            let response: [Transaction] = try await transactions.fetchByDate(month: month, year: year)
             withAnimation(.spring(duration: 0.3)) {
                 transactionsDB = response
             }
