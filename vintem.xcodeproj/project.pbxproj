@@ -14,11 +14,13 @@
 		DC261A9D2F0C91BC00851335 /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A9C2F0C91BC00851335 /* Storage */; };
 		DC261A9F2F0C91BC00851335 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A9E2F0C91BC00851335 /* Supabase */; };
 		DCAC44DC2F42020500A2B5E0 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = DCAC44DB2F42020500A2B5E0 /* README.md */; };
+		DCAFE12E2F43C0FC001C5A80 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = DCAFE12D2F43C0FC001C5A80 /* Localizable.xcstrings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		DC7E111B2EE7ADC2007081AB /* vintem.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = vintem.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DCAC44DB2F42020500A2B5E0 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		DCAFE12D2F43C0FC001C5A80 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -56,6 +58,7 @@
 		DC7E11122EE7ADC2007081AB = {
 			isa = PBXGroup;
 			children = (
+				DCAFE12D2F43C0FC001C5A80 /* Localizable.xcstrings */,
 				DC7E111D2EE7ADC2007081AB /* vintem */,
 				DC261A932F0C91BC00851335 /* Frameworks */,
 				DC7E111C2EE7ADC2007081AB /* Products */,
@@ -118,11 +121,12 @@
 				};
 			};
 			buildConfigurationList = DC7E11162EE7ADC2007081AB /* Build configuration list for PBXProject "vintem" */;
-			developmentRegion = en;
+			developmentRegion = "pt-BR";
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
+				"pt-BR",
 			);
 			mainGroup = DC7E11122EE7ADC2007081AB;
 			minimizedProjectReferenceProxies = 1;
@@ -145,6 +149,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DCAC44DC2F42020500A2B5E0 /* README.md in Resources */,
+				DCAFE12E2F43C0FC001C5A80 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -223,6 +228,7 @@
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -282,6 +288,7 @@
 				SDKROOT = macosx;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
