@@ -13,8 +13,8 @@ import SwiftUI
 @MainActor
 class SupabaseManager: ObservableObject {
     @Published var client = SupabaseClient(
-        supabaseURL: URL(string: ProcessInfo.processInfo.environment["SUPABASE_DB_URL"]!)!,
-        supabaseKey: ProcessInfo.processInfo.environment["SUPABASE_DB_KEY"]!,
+        supabaseURL: URL(string: ProcessInfo.processInfo.environment["SUPABASE_DB_URL_LOCAL"]!)!,
+        supabaseKey: ProcessInfo.processInfo.environment["SUPABASE_DB_KEY_LOCAL"]!,
         options: SupabaseClientOptions(
             db: .init(
                 decoder: {

@@ -30,23 +30,11 @@ struct NewTransactionView: View {
     }
 
     private var paymentColor: Color {
-        switch tipoPagamento {
-        case .credito:  return Color(red: 0.22, green: 0.55, blue: 1.0)
-        case .debito:   return Color(red: 0.28, green: 0.78, blue: 0.58)
-        case .pix:      return Color(red: 0.25, green: 0.72, blue: 0.65)
-        case .dinheiro: return Color(red: 0.42, green: 0.75, blue: 0.35)
-        case .outro:    return Color(red: 0.65, green: 0.55, blue: 0.85)
-        }
+        GetPaymentColor(type: tipoPagamento)
     }
 
     private var paymentIcon: String {
-        switch tipoPagamento {
-        case .credito:  return "creditcard.fill"
-        case .debito:   return "creditcard"
-        case .pix:      return "qrcode"
-        case .dinheiro: return "banknote.fill"
-        case .outro:    return "ellipsis.circle.fill"
-        }
+        GetPaymentIcon(type: tipoPagamento)
     }
 
     private var installmentValue: String {
@@ -128,22 +116,7 @@ struct NewTransactionView: View {
                     .glassEffect(in: RoundedRectangle(cornerRadius: 14))
 
                     // Valor
-                    VStack(alignment: .center, spacing: 6) {
-                        Text("VALOR")
-                            .font(.system(size: 9, weight: .heavy))
-                            .foregroundStyle(paymentColor.opacity(0.8))
-                            .tracking(2)
-
-                        TextField("0,00", value: $valor, format: .currency(code: "BRL"))
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .foregroundStyle(valor != nil && valor! > 0 ? .primary : .tertiary)
-                            .multilineTextAlignment(.center)
-                            .textFieldStyle(.plain)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 14)
-                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                    ValueField(paymentColor: paymentColor, value: $valor)
                 }
                 .padding(.horizontal, 20)
                 .opacity(appeared ? 1 : 0)
@@ -151,36 +124,11 @@ struct NewTransactionView: View {
                 .animation(.spring(response: 0.5).delay(0.08), value: appeared)
 
                 // ── Tipo de pagamento ─────────────────────────────────
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("PAGAMENTO")
-                        .font(.system(size: 9, weight: .heavy))
-                        .foregroundStyle(paymentColor.opacity(0.8))
-                        .tracking(2)
-                        .padding(.horizontal, 2)
-
-                    HStack(spacing: 6) {
-                        ForEach(PaymentType.allCases, id: \.self) { type in
-                            PaymentTypeChip(
-                                type: type,
-                                isSelected: tipoPagamento == type,
-                                color: paymentColor
-                            )
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                    tipoPagamento = type
-                                }
-                            }
-                        }
-                    }
-                    .padding(6)
-                    .glassEffect(in: RoundedRectangle(cornerRadius: 14))
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 10)
-                .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 10)
-                .animation(.spring(response: 0.5).delay(0.11), value: appeared)
+                PaymentTypePicker(
+                    paymentColor: paymentColor,
+                    transactionPaymentType: $tipoPagamento,
+                    appeared: $appeared
+                )
 
                 // ── Parcelas ──────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {

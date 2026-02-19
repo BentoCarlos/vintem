@@ -10,6 +10,7 @@ struct TransactionUpdate: Codable {
     let name: String
     let amount_cents: Int?
     let payment_type_id: Int?
+    let updated_at: Date
 }
 
 struct TransactionDetailView: View {
@@ -39,23 +40,11 @@ struct TransactionDetailView: View {
     }
 
     private var paymentColor: Color {
-        switch transactionPaymentType {
-        case .credito:  return Color(red: 0.22, green: 0.55, blue: 1.0)
-        case .debito:   return Color(red: 0.28, green: 0.78, blue: 0.58)
-        case .pix:      return Color(red: 0.25, green: 0.72, blue: 0.65)
-        case .dinheiro: return Color(red: 0.42, green: 0.75, blue: 0.35)
-        case .outro:    return Color(red: 0.65, green: 0.55, blue: 0.85)
-        }
+        GetPaymentColor(type: transactionPaymentType)
     }
 
     private var paymentIcon: String {
-        switch transactionPaymentType {
-        case .credito:  return "creditcard.fill"
-        case .debito:   return "creditcard"
-        case .pix:      return "qrcode"
-        case .dinheiro: return "banknote.fill"
-        case .outro:    return "ellipsis.circle.fill"
-        }
+        GetPaymentIcon(type: transactionPaymentType)
     }
 
     var body: some View {
@@ -96,7 +85,6 @@ struct TransactionDetailView: View {
 
             } else {
                 VStack(spacing: 0) {
-
                     ScrollView {
                         VStack(spacing: 0) {
 
@@ -156,23 +144,7 @@ struct TransactionDetailView: View {
                                 .glassEffect(in: RoundedRectangle(cornerRadius: 14))
 
                                 // Valor
-                                VStack(alignment: .center, spacing: 6) {
-                                    Text("VALOR")
-                                        .font(.system(size: 9, weight: .heavy))
-                                        .foregroundStyle(paymentColor.opacity(0.8))
-                                        .tracking(2)
-
-                                    TextField("0,00", value: $transactionValue, format: .currency(code: "BRL"))
-                                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                                        .foregroundStyle(.primary)
-                                        .multilineTextAlignment(.center)
-                                        .textFieldStyle(.plain)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal, 14)
-                                .padding(.vertical, 14)
-                                .glassEffect(in: RoundedRectangle(cornerRadius: 14))
+                                ValueField(paymentColor: paymentColor, value: $transactionValue)
                             }
                             .padding(.horizontal, 20)
                             .opacity(appeared ? 1 : 0)
@@ -180,36 +152,11 @@ struct TransactionDetailView: View {
                             .animation(.spring(response: 0.5).delay(0.08), value: appeared)
 
                             // ── Tipo de pagamento ─────────────────────
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("PAGAMENTO")
-                                    .font(.system(size: 9, weight: .heavy))
-                                    .foregroundStyle(paymentColor.opacity(0.8))
-                                    .tracking(2)
-                                    .padding(.horizontal, 2)
-
-                                HStack(spacing: 6) {
-                                    ForEach(PaymentType.allCases, id: \.self) { type in
-                                        PaymentTypeChip(
-                                            type: type,
-                                            isSelected: transactionPaymentType == type,
-                                            color: paymentColor
-                                        )
-                                        .contentShape(Rectangle())
-                                        .onTapGesture {
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                transactionPaymentType = type
-                                            }
-                                        }
-                                    }
-                                }
-                                .padding(6)
-                                .glassEffect(in: RoundedRectangle(cornerRadius: 14))
-                            }
-                            .padding(.horizontal, 20)
-                            .padding(.top, 10)
-                            .opacity(appeared ? 1 : 0)
-                            .offset(y: appeared ? 0 : 10)
-                            .animation(.spring(response: 0.5).delay(0.11), value: appeared)
+                            PaymentTypePicker(
+                                paymentColor: paymentColor,
+                                transactionPaymentType: $transactionPaymentType,
+                                appeared: $appeared
+                            )
 
                             // ── Parcelas ──────────────────────────────
                             if !installments.isEmpty {
@@ -326,11 +273,21 @@ struct TransactionDetailView: View {
         Task {
             isUpdating = true
             do {
-                let paymentTypeId = try await supabase.paymentTypes.fetchPaymentType(for: transactionPaymentType)
+                var paymentTypeId = try await supabase.paymentTypes.fetchPaymentType(for: transactionPaymentType)
+
+                if paymentTypeId == nil {
+                    paymentTypeId = try? await supabase.paymentTypes.insert(typeName: transactionPaymentType.rawValue)
+                }
+
+                guard let paymentTypeId else {
+                    throw TransactionError.newPaymentType(message: "Erro ao recuperar o tipo de pagamento.")
+                }
+
                 let updated = TransactionUpdate(
                     name: transactionName,
                     amount_cents: transactionValue.map { Int($0 * 100) },
-                    payment_type_id: paymentTypeId
+                    payment_type_id: paymentTypeId,
+                    updated_at: Date.now
                 )
                 try await supabase.transactions.update(for: transaction.id!, updatedTransaction: updated)
                 await supabase.refreshTransactions()
@@ -343,51 +300,7 @@ struct TransactionDetailView: View {
     }
 }
 
-// ── PaymentTypeChip ───────────────────────────────────────────────────
-
-struct PaymentTypeChip: View {
-    let type: PaymentType
-    let isSelected: Bool
-    let color: Color
-
-    private var icon: String {
-        switch type {
-        case .credito:  return "creditcard.fill"
-        case .debito:   return "creditcard"
-        case .pix:      return "qrcode"
-        case .dinheiro: return "banknote"
-        case .outro:    return "ellipsis.circle"
-        }
-    }
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
-                .foregroundStyle(isSelected ? color : .secondary)
-
-            Text(type.rawValue)
-                .font(.system(size: 9, weight: isSelected ? .bold : .medium))
-                .foregroundStyle(isSelected ? color : .secondary)
-                .textCase(.uppercase)
-                .tracking(0.3)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(isSelected ? color.opacity(0.15) : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(isSelected ? color.opacity(0.4) : Color.clear, lineWidth: 1.5)
-        )
-        .animation(.spring(response: 0.3), value: isSelected)
-    }
-}
-
 // ── InstallmentChip ───────────────────────────────────────────────────
-
 struct InstallmentChip: View {
     var portion: Int
     var total: Int
