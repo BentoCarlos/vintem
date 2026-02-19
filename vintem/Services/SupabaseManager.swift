@@ -75,7 +75,10 @@ class SupabaseManager: ObservableObject {
         loadingData = true
 
         do {
-            let transactionsResponse: [Transaction] = try await transactions.fetchAll()
+            let currentMonth = Calendar.current.component(.month, from: Date())
+            let currentYear = Calendar.current.component(.year, from: Date())
+
+            let transactionsResponse: [Transaction] = try await transactions.fetchByDate(month: currentMonth, year: currentYear)
             transactionsDB = transactionsResponse
             loadingData = false
             errorLoadingData = false
@@ -90,7 +93,11 @@ class SupabaseManager: ObservableObject {
 
     func refreshTransactions() async {
         do {
-            let response: [Transaction] = try await transactions.fetchAll()
+            // Você vai precisar passar esses valores ou armazenar no SupabaseManager
+            let currentMonth = Calendar.current.component(.month, from: Date())
+            let currentYear = Calendar.current.component(.year, from: Date())
+
+            let response: [Transaction] = try await transactions.fetchByDate(month: currentMonth, year: currentYear)
             withAnimation(.spring(duration: 0.3)) {
                 transactionsDB = response
             }
@@ -98,7 +105,6 @@ class SupabaseManager: ObservableObject {
             print("Erro ao buscar as transações: \(error)")
         }
     }
-
     func filterTransactions(month: Int, year: Int) async {
         do {
             let response: [Transaction] = try await transactions.fetchByDate(month: month, year: year)

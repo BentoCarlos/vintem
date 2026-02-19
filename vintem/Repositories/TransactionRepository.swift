@@ -18,7 +18,7 @@ class TransactionRepository {
     func fetchAll() async throws -> [Transaction] {
         return try await client
             .from("transactions")
-            .select("id, name, amount_cents, payment_type:payment_types(name)")
+            .select("id, name, amount_cents, payment_type:payment_types(name), installments(total_portions)")
             .execute()
             .value
     }
