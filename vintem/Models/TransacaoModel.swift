@@ -39,13 +39,15 @@ final class Transaction: Identifiable, Codable {
     var payment_type: PaymentTypeDB? = nil
     var payment_type_id: Int? = nil
     var total_portions: Int? = nil
+    var installment_value: Int? = nil
 
     init(id: Int? = nil,
          name: String,
          amount_cents: Int? = nil,
          payment_type: PaymentTypeDB? = nil,
          payment_type_id: Int? = nil,
-         total_installments: Int? = nil
+         total_installments: Int? = nil,
+         installment_value: Int? = nil
     ) {
         self.id = id
         self.name = name
@@ -53,6 +55,7 @@ final class Transaction: Identifiable, Codable {
         self.payment_type = payment_type
         self.payment_type_id = payment_type_id
         self.total_portions = total_installments
+        self.installment_value = installment_value
     }
 
     enum CodingKeys: String, CodingKey {
@@ -62,5 +65,6 @@ final class Transaction: Identifiable, Codable {
         case payment_type
         case payment_type_id
         case total_portions
+        case installment_value = "value"
     }
 }

@@ -99,6 +99,7 @@ struct TransactionRowView: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(isHoveredDel ? .red : .secondary)
                         .padding(8)
+                        .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
                 .glassEffect()

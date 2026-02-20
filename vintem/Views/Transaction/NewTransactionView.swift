@@ -141,11 +141,22 @@ struct NewTransactionView: View {
                     VStack(spacing: 10) {
                         // Número + valor por parcela
                         HStack(alignment: .lastTextBaseline) {
-                            Text("\(Int(installments))x")
-                                .font(.system(size: 28, weight: .black, design: .rounded))
-                                .foregroundStyle(paymentColor)
-                                .contentTransition(.numericText())
-                                .animation(.bouncy, value: installments)
+                            HStack(alignment: .firstTextBaseline) {
+                                TextField("", value: $installments, format: .number)
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundStyle(paymentColor)
+                                    .contentTransition(.numericText())
+                                    .animation(.bouncy, value: installments)
+                                    .textFieldStyle(.plain)
+                                    .fixedSize()
+
+                                Text("x")
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundStyle(paymentColor)
+                                    .contentTransition(.numericText())
+                                    .animation(.bouncy, value: installments)
+                                    .textFieldStyle(.plain)
+                            }
 
                             if installments == 1 || !installmentValue.isEmpty {
                                 Text(installments == 1 ? "à vista" : "de \(installmentValue)")
@@ -272,7 +283,7 @@ struct NewTransactionView: View {
                     payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
                     created_at: Date.now,
                     updated_at: Date.now,
-                    value: Int((newTransaction.amount_cents! / Int(installments)) * 100)
+                    value: newTransaction.amount_cents! / Int(installments)
                 )
                 await supabase.installments.insert(for: newTransactionId, newInstallment: newInstallment)
             }

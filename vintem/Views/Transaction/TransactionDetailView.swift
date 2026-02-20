@@ -170,19 +170,17 @@ struct TransactionDetailView: View {
                                     ScrollViewReader { proxy in
                                         ScrollView(.horizontal, showsIndicators: false) {
                                             HStack(spacing: 8) {
-                                                ForEach(installments) { installment in
+                                                ForEach($installments) { $installment in
                                                     let isCurrent = Calendar.current.isDate(
                                                         installment.payment_date,
                                                         equalTo: .now,
                                                         toGranularity: .month
                                                     )
-                                                    let totalValue = Double(transaction.amount_cents ?? 0) / 100.0
-                                                    let installmentValue = totalValue / Double(installment.total_portions)
 
                                                     InstallmentChip(
                                                         portion: installment.portion,
                                                         total: installment.total_portions,
-                                                        value: installmentValue,
+                                                        value: $installment.value,
                                                         dueDate: installment.payment_date,
                                                         color: paymentColor,
                                                         isCurrentInstallment: isCurrent
@@ -290,6 +288,10 @@ struct TransactionDetailView: View {
                     updated_at: Date.now
                 )
                 try await supabase.transactions.update(for: transaction.id!, updatedTransaction: updated)
+
+                for installment in installments {
+                    await supabase.installments.update(for: installment.id!, updated: installment)
+                }
                 await supabase.refreshTransactions()
                 dismiss()
             } catch {
@@ -304,7 +306,7 @@ struct TransactionDetailView: View {
 struct InstallmentChip: View {
     var portion: Int
     var total: Int
-    var value: Double
+    @Binding var value: Int
     var dueDate: Date
     var color: Color
     var isCurrentInstallment: Bool
@@ -327,9 +329,15 @@ struct InstallmentChip: View {
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundStyle(.secondary)
 
-            Text(value, format: .currency(code: "BRL"))
-                .font(.system(size: 13, weight: .bold, design: .rounded))
-                .foregroundStyle(.primary)
+            TextField("0,00", value: Binding(
+                get: { Double(value) / 100.0 },
+                set: { value = Int($0 * 100) }
+            ), format: .currency(code: "BRL"))
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(value > 0 ? .primary : .tertiary)
+                .multilineTextAlignment(.center)
+                .textFieldStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(12)
         .frame(minWidth: 100)

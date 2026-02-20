@@ -45,6 +45,7 @@
       }
     },
     "%lldx" : {
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -329,6 +330,9 @@
           }
         }
       }
+    },
+    "x" : {
+
     }
   },
   "version" : "1.1"

@@ -9,14 +9,14 @@ import SwiftUI
 import Supabase
 
 struct Installment: Codable, Identifiable {
-    let id: Int?
+    var id: Int?
     let transaction_id: Int
     let portion: Int
     let total_portions: Int
     let payment_date: Date
     let created_at: Date
     let updated_at: Date
-    let value: Int
+    var value: Int
 }
 
 class InstallmentRepository {
@@ -31,6 +31,7 @@ class InstallmentRepository {
                 .from("installments")
                 .select()
                 .eq("transaction_id", value: transactionId)
+                .order("id")
                 .execute()
                 .value
     }
@@ -43,6 +44,18 @@ class InstallmentRepository {
                 .execute()
         } catch {
             print("Erro ao inserir parcela: \(error)")
+        }
+    }
+
+    func update(for id: Int, updated: Installment) async {
+        do {
+            try await client
+                .from("installments")
+                .update(updated)
+                .eq("id", value: id)
+                .execute()
+        } catch {
+            print("Erro ao atualizar parcela: \(error)")
         }
     }
 
