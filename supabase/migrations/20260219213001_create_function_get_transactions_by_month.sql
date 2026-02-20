@@ -11,7 +11,8 @@ returns table(
   installment_id bigint,
   portion int,
   total_portions int,
-  payment_date date
+  payment_date date,
+  value int
 )
 language sql
 as $$
@@ -27,7 +28,8 @@ as $$
     installments.id as installment_id,
     installments.portion,
     installments.total_portions,
-    installments.payment_date
+    installments.payment_date,
+	installments.value
   from transactions
   join installments on installments.transaction_id = transactions.id
   join payment_types on transactions.payment_type_id = payment_types.id

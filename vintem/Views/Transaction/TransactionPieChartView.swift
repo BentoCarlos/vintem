@@ -12,7 +12,7 @@ import Charts
 struct PaymentData: Identifiable {
     var id: String { type.rawValue }
     var type: PaymentType
-    var totalValue: Double
+    var totalValue: Decimal
 }
 
 extension PaymentType {
@@ -32,15 +32,17 @@ struct TransactionPieChartView: View {
     @State private var selectedSectorId: String?
     @EnvironmentObject var supabase: SupabaseManager
 
-    private var validTransactions: [(PaymentType, Double)] {
-        supabase.transactionsDB.compactMap { transaction -> (PaymentType, Double)? in
+    private var validTransactions: [(PaymentType, Decimal)] {
+        supabase.transactionsDB.compactMap { transaction -> (PaymentType, Decimal)? in
             guard let type = transaction.payment_type?.toEnum,
-                  let cents = transaction.amount_cents else { return nil }
-            return (type, Double(cents) / 100.0)
+                  let cents = transaction.installment_value else { return nil }
+
+            let decimalCents = Decimal(cents)
+            let decimalValue = decimalCents / Decimal(100)
+            return (type, decimalValue)
         }
     }
-
-    private var groupedData: [PaymentType: [(PaymentType, Double)]] {
+    private var groupedData: [PaymentType: [(PaymentType, Decimal)]] {
         Dictionary(grouping: validTransactions, by: { $0.0 })
     }
 
@@ -53,7 +55,7 @@ struct TransactionPieChartView: View {
     var body: some View {
         Chart(chartData, id: \.id) { data in
             SectorMark(
-                angle: .value("Tipo", data.totalValue),
+                angle: .value("Tipo", Double(truncating: data.totalValue as NSDecimalNumber)),
                 innerRadius: .ratio(0.6),
                 outerRadius: selectedSectorId == data.id ? .ratio(0.9) : .ratio(0.8),
                 angularInset: 1
@@ -80,7 +82,8 @@ struct TransactionPieChartView: View {
             var cumulative = 0.0
             selectedSectorId = chartData.first { data in
                 let start = cumulative
-                cumulative += data.totalValue
+                let dataValue = Double(truncating: data.totalValue as NSDecimalNumber)
+                cumulative += dataValue
                 return newAngle >= start && newAngle < cumulative
             }?.id
         }

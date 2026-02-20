@@ -18,7 +18,7 @@ struct NewTransactionView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var titulo: String = ""
-    @State private var valor: Double? = nil
+    @State private var valor: Decimal? = nil
     @State private var tipoPagamento: PaymentType = .credito
     @State private var isSaving = false
     @State private var appeared = false
@@ -39,7 +39,8 @@ struct NewTransactionView: View {
 
     private var installmentValue: String {
         guard let totalValue = valor else { return "" }
-        return (totalValue / installments).formatted(.currency(code: Locale.current.currency?.identifier ?? "BRL"))
+        let value = totalValue / Decimal(installments)
+        return value.formatted(.currency(code: Locale.current.currency?.identifier ?? "BRL"))
     }
 
     var body: some View {
@@ -264,7 +265,7 @@ struct NewTransactionView: View {
 
             let newTransaction = Transaction(
                 name: titulo,
-                amount_cents: valor != nil ? Int(valor! * 100) : 0,
+                amount_cents: valor != nil ? Int(truncating: (valor! * 100) as NSNumber) : 0,
                 payment_type_id: paymentId
             )
 

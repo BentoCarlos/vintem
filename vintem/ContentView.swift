@@ -32,14 +32,8 @@ struct ContentView: View {
 
     private var totalGasto: Double {
         let total = supabase.transactionsDB.compactMap { transaction -> Double? in
-            guard let cents = transaction.amount_cents,
-                  let portions = transaction.total_portions,
-                  portions > 0 else {
-                return nil
-            }
-
-            let value = Double(cents) / Double(portions) / 100.0
-            return value
+            guard transaction.installment_value != nil else { return nil }
+            return Double(transaction.installment_value!) / 100.0
         }.reduce(0, +)
 
         return total

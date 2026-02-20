@@ -19,7 +19,7 @@ struct TransactionDetailView: View {
 
     @State var transaction: Transaction
     @State var transactionName: String
-    @State var transactionValue: Double?
+    @State var transactionValue: Decimal?
     @State var transactionPaymentType: PaymentType
 
     @State private var isUpdating = false
@@ -31,7 +31,7 @@ struct TransactionDetailView: View {
     init(transaction: Transaction) {
         _transaction = State(initialValue: transaction)
         _transactionName = State(initialValue: transaction.name)
-        _transactionValue = State(initialValue: transaction.amount_cents.map { Double($0) / 100.0 })
+        _transactionValue = State(initialValue: transaction.amount_cents.map { Decimal($0) / 100 })
         _transactionPaymentType = State(initialValue: transaction.payment_type?.toEnum ?? .outro)
     }
 
@@ -283,7 +283,7 @@ struct TransactionDetailView: View {
 
                 let updated = TransactionUpdate(
                     name: transactionName,
-                    amount_cents: transactionValue.map { Int($0 * 100) },
+                    amount_cents: transactionValue.map { Int(truncating: ($0 * 100) as NSDecimalNumber) },
                     payment_type_id: paymentTypeId,
                     updated_at: Date.now
                 )

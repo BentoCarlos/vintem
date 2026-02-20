@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ValueField: View {
     var paymentColor: Color
-    @Binding var value: Double?
+    @Binding var value: Decimal?
 
     var body: some View{
         VStack(alignment: .center, spacing: 6) {
