@@ -271,7 +271,8 @@ struct NewTransactionView: View {
                     total_portions: Int(installments),
                     payment_date: Calendar.current.date(byAdding: .month, value: i - 1, to: selectedDate)!,
                     created_at: Date.now,
-                    updated_at: Date.now
+                    updated_at: Date.now,
+                    value: Int((newTransaction.amount_cents! / Int(installments)) * 100)
                 )
                 await supabase.installments.insert(for: newTransactionId, newInstallment: newInstallment)
             }

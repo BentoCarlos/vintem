@@ -16,6 +16,7 @@ struct Installment: Codable, Identifiable {
     let payment_date: Date
     let created_at: Date
     let updated_at: Date
+    let value: Int
 }
 
 class InstallmentRepository {

@@ -31,26 +31,17 @@ struct ContentView: View {
     }
 
     private var totalGasto: Double {
-        print("DEBUG transactionsDB count: \(supabase.transactionsDB.count)")
-
         let total = supabase.transactionsDB.compactMap { transaction -> Double? in
-            print("  - ID: \(transaction.id ?? -1)")
-            print("    amount_cents: \(transaction.amount_cents ?? -999)")
-            print("    total_portions: \(transaction.total_portions ?? -999)")
-
             guard let cents = transaction.amount_cents,
                   let portions = transaction.total_portions,
                   portions > 0 else {
-                print("    SKIP (nil values or portions = 0)")
                 return nil
             }
 
             let value = Double(cents) / Double(portions) / 100.0
-            print("    VALUE: \(value)")
             return value
         }.reduce(0, +)
 
-        print("TOTAL GASTO: \(total)")
         return total
     }
     
