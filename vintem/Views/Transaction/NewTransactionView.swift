@@ -18,12 +18,15 @@ struct NewTransactionView: View {
     @Environment(\.dismiss) var dismiss
 
     @State private var titulo: String = ""
+    @State private var novaCategoriaNome: String = ""
     @State private var valor: Decimal? = nil
     @State private var tipoPagamento: PaymentType = .credito
     @State private var isSaving = false
     @State private var appeared = false
     @State private var installments: Double = 1
     @State private var selectedDate = Date()
+    @State private var category: Category? = nil
+    @State private var showNewCategorySheet: Bool = false
 
     var isFormInvalid: Bool {
         titulo.trimmingCharacters(in: .whitespaces).isEmpty || (valor ?? 0) <= 0
@@ -130,6 +133,41 @@ struct NewTransactionView: View {
                     transactionPaymentType: $tipoPagamento,
                     appeared: $appeared
                 )
+
+                VStack {
+                    CategoryPicker(
+                        paymentColor: paymentColor,
+                        appeared: $appeared,
+                        category: $category
+                    )
+                    .environmentObject(supabase)
+
+                    Button(action: { showNewCategorySheet.toggle() }) {
+                        HStack {
+                            Image(systemName: "plus")
+
+                            Text("Adicionar categoria")
+                        }
+                        .padding(4)
+                        .frame(maxWidth: .infinity)
+                    }
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(paymentColor, style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [4, 3]))
+                    )
+                    .tint(paymentColor)
+                    .padding(.horizontal, 20)
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 10)
+                    .animation(.spring(response: 0.5).delay(0.11), value: appeared)
+                }
+                .sheet(isPresented: $showNewCategorySheet) {
+                    NewCategoryView(
+                        paymentColor: paymentColor,
+                        novaCategoriaNome: $novaCategoriaNome
+                    )
+                    .environmentObject(supabase)
+                }
 
                 // ── Parcelas ──────────────────────────────────────────
                 VStack(alignment: .leading, spacing: 8) {
@@ -266,7 +304,8 @@ struct NewTransactionView: View {
             let newTransaction = Transaction(
                 name: titulo,
                 amount_cents: valor != nil ? Int(truncating: (valor! * 100) as NSNumber) : 0,
-                payment_type_id: paymentId
+                payment_type_id: paymentId,
+                category_id: category!.id
             )
 
             let newTransactionId: Int? = await supabase.transactions.insert(newTransaction: newTransaction)

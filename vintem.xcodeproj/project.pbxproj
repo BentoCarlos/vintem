@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DC1B1FFB2F4A3E1100297D26 /* SFSymbolsPicker in Frameworks */ = {isa = PBXBuildFile; productRef = DC1B1FFA2F4A3E1100297D26 /* SFSymbolsPicker */; };
 		DC261A952F0C91BC00851335 /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A942F0C91BC00851335 /* Auth */; };
 		DC261A972F0C91BC00851335 /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A962F0C91BC00851335 /* Functions */; };
 		DC261A992F0C91BC00851335 /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = DC261A982F0C91BC00851335 /* PostgREST */; };
@@ -38,6 +39,7 @@
 			files = (
 				DC261A992F0C91BC00851335 /* PostgREST in Frameworks */,
 				DC261A972F0C91BC00851335 /* Functions in Frameworks */,
+				DC1B1FFB2F4A3E1100297D26 /* SFSymbolsPicker in Frameworks */,
 				DC261A9F2F0C91BC00851335 /* Supabase in Frameworks */,
 				DC261A952F0C91BC00851335 /* Auth in Frameworks */,
 				DC261A9D2F0C91BC00851335 /* Storage in Frameworks */,
@@ -100,6 +102,7 @@
 				DC261A9A2F0C91BC00851335 /* Realtime */,
 				DC261A9C2F0C91BC00851335 /* Storage */,
 				DC261A9E2F0C91BC00851335 /* Supabase */,
+				DC1B1FFA2F4A3E1100297D26 /* SFSymbolsPicker */,
 			);
 			productName = meudindin;
 			productReference = DC7E111B2EE7ADC2007081AB /* vintem.app */;
@@ -132,6 +135,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+				DC1B1FF92F4A3E1100297D26 /* XCRemoteSwiftPackageReference "SFSymbolsPicker" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DC7E111C2EE7ADC2007081AB /* Products */;
@@ -402,6 +406,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		DC1B1FF92F4A3E1100297D26 /* XCRemoteSwiftPackageReference "SFSymbolsPicker" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alessiorubicini/SFSymbolsPicker";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.9;
+			};
+		};
 		DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/supabase-community/supabase-swift.git";
@@ -413,6 +425,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		DC1B1FFA2F4A3E1100297D26 /* SFSymbolsPicker */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DC1B1FF92F4A3E1100297D26 /* XCRemoteSwiftPackageReference "SFSymbolsPicker" */;
+			productName = SFSymbolsPicker;
+		};
 		DC261A942F0C91BC00851335 /* Auth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = DC261A912F0C90F400851335 /* XCRemoteSwiftPackageReference "supabase-swift" */;

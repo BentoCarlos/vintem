@@ -11,6 +11,7 @@ struct TransactionUpdate: Codable {
     let amount_cents: Int?
     let payment_type_id: Int?
     let updated_at: Date
+    let category_id: Int?
 }
 
 struct TransactionDetailView: View {
@@ -27,6 +28,9 @@ struct TransactionDetailView: View {
     @State private var appeared = false
     @State private var installments: [Installment] = []
     @State private var scrollProxy: ScrollViewProxy? = nil
+    @State private var category: Category? = nil
+    @State private var novaCategoriaNome: String = ""
+    @State private var showNewCategorySheet: Bool = false
 
     init(transaction: Transaction) {
         _transaction = State(initialValue: transaction)
@@ -158,6 +162,42 @@ struct TransactionDetailView: View {
                                 appeared: $appeared
                             )
 
+                            VStack {
+                                CategoryPicker(
+                                    paymentColor: paymentColor,
+                                    appeared: $appeared,
+                                    category: $category,
+                                    transaction: transaction
+                                )
+                                .environmentObject(supabase)
+
+                                Button(action: { showNewCategorySheet.toggle() }) {
+                                    HStack {
+                                        Image(systemName: "plus")
+
+                                        Text("Adicionar categoria")
+                                    }
+                                    .padding(4)
+                                    .frame(maxWidth: .infinity)
+                                }
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(paymentColor, style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [4, 3]))
+                                )
+                                .tint(paymentColor)
+                                .padding(.horizontal, 20)
+                                .opacity(appeared ? 1 : 0)
+                                .offset(y: appeared ? 0 : 10)
+                                .animation(.spring(response: 0.5).delay(0.11), value: appeared)
+                            }
+                            .sheet(isPresented: $showNewCategorySheet) {
+                                NewCategoryView(
+                                    paymentColor: paymentColor,
+                                    novaCategoriaNome: $novaCategoriaNome
+                                )
+                                .environmentObject(supabase)
+                            }
+
                             // ── Parcelas ──────────────────────────────
                             if !installments.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
@@ -285,7 +325,8 @@ struct TransactionDetailView: View {
                     name: transactionName,
                     amount_cents: transactionValue.map { Int(truncating: ($0 * 100) as NSDecimalNumber) },
                     payment_type_id: paymentTypeId,
-                    updated_at: Date.now
+                    updated_at: Date.now,
+                    category_id: category!.id
                 )
                 try await supabase.transactions.update(for: transaction.id!, updatedTransaction: updated)
 
@@ -313,43 +354,60 @@ struct InstallmentChip: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Text("\(portion)")
-                    .font(.system(size: 20, weight: .heavy, design: .rounded))
-                    .foregroundStyle(color)
-                Text("/ \(total)")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(color.opacity(0.5))
-            }
+            portionLabel
 
             Divider()
                 .overlay(color.opacity(0.2))
 
-            Text(dueDate, style: .date)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-
-            TextField("0,00", value: Binding(
-                get: { Double(value) / 100.0 },
-                set: { value = Int($0 * 100) }
-            ), format: .currency(code: "BRL"))
-                .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundStyle(value > 0 ? .primary : .tertiary)
-                .multilineTextAlignment(.center)
-                .textFieldStyle(.plain)
-                .fixedSize(horizontal: false, vertical: true)
+            dateLabel
+            valueField
         }
         .padding(12)
         .frame(minWidth: 100)
-        .background(isCurrentInstallment ? color.opacity(0.25) : color.opacity(0.08))
+        .background(backgroundStyle)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(
-                    isCurrentInstallment ? color.opacity(0.6) : color.opacity(0.25),
-                    lineWidth: isCurrentInstallment ? 2 : 1.5
-                )
-        )
+        .overlay(borderOverlay)
+    }
+
+    private var portionLabel: some View {
+        HStack(spacing: 4) {
+            Text("\(portion)")
+                .font(.system(size: 20, weight: .heavy, design: .rounded))
+                .foregroundStyle(color)
+            Text("/ \(total)")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(color.opacity(0.5))
+        }
+    }
+
+    private var dateLabel: some View {
+        Text(dueDate, style: .date)
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.secondary)
+    }
+
+    private var valueField: some View {
+        TextField("0,00", value: Binding(
+            get: { Double(value) / 100.0 },
+            set: { value = Int($0 * 100) }
+        ), format: .currency(code: "BRL"))
+        .font(.system(size: 15, weight: .bold, design: .rounded))
+        .foregroundStyle(value > 0 ? .primary : .tertiary)
+        .multilineTextAlignment(.center)
+        .textFieldStyle(.plain)
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var backgroundStyle: Color {
+        isCurrentInstallment ? color.opacity(0.25) : color.opacity(0.08)
+    }
+
+    private var borderOverlay: some View {
+        RoundedRectangle(cornerRadius: 14)
+            .strokeBorder(
+                isCurrentInstallment ? color.opacity(0.6) : color.opacity(0.25),
+                lineWidth: isCurrentInstallment ? 2 : 1.5
+            )
     }
 }
 

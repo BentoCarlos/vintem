@@ -136,7 +136,7 @@ struct ContentView: View {
                                     ))
                                 }
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: 12)) // ✅ corta o que vazar
+                            .clipShape(RoundedRectangle(cornerRadius: 12)) 
                         }
                     }
                     .padding(16)

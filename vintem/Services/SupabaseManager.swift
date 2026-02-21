@@ -64,12 +64,14 @@ class SupabaseManager: ObservableObject {
         )
     )
     @Published var transactionsDB: [Transaction] = []
+    @Published var categoriesDB: [Category] = []
     @Published var loadingData: Bool = true
     @Published var errorLoadingData: Bool = false
 
     lazy var transactions = TransactionRepository(client: client)
     lazy var paymentTypes = PaymentTypeRepository(client: client)
     lazy var installments = InstallmentRepository(client: client)
+    lazy var categories   = CategoryRepository(client: client)
 
     func fetchTransactions() async {
         loadingData = true
@@ -105,6 +107,7 @@ class SupabaseManager: ObservableObject {
             print("Erro ao buscar as transações: \(error)")
         }
     }
+
     func filterTransactions(month: Int, year: Int) async {
         do {
             let response: [Transaction] = try await transactions.fetchByDate(month: month, year: year)
@@ -113,6 +116,14 @@ class SupabaseManager: ObservableObject {
             }
         } catch {
             print("Erro ao buscar as transações: \(error)")
+        }
+    }
+
+    func refreshCategories() async {
+        do {
+            categoriesDB = try await categories.fetchAll()
+        } catch {
+            print("Erro ao buscar as categorias: \(error)")
         }
     }
 }
