@@ -6,10 +6,10 @@
 //
 
 import Charts
-import SwiftUI
 import Combine
+import SwiftUI
 
-struct ChartData: Identifiable {
+struct ChartData: Identifiable, Equatable {
     let id: Int
     let category: Category
     let total: Decimal
@@ -17,19 +17,23 @@ struct ChartData: Identifiable {
 
 struct ChartCategoryView: View {
     @EnvironmentObject var supabase: SupabaseManager
-    @State private var selectedAngle: Double?
-    @State private var selectedSectorId: Int?
+    @State private var hoveredBar: String? = nil
     @State private var chartData: [ChartData] = []
 
     var body: some View {
         Chart(chartData, id: \.id) { data in
-            createSectorMark(for: data)
+            createBarMark(for: data)
         }
-        .chartAngleSelection(value: $selectedAngle)
-        .contentShape(Circle(), eoFill: false)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
+        .chartXSelection(value: $hoveredBar)
+        .chartYScale(domain: 0...(max((chartData.map { Double(truncating: $0.total as NSDecimalNumber) }.max() ?? 0.0), 1.0)))
         .chartLegend(alignment: .leading)
         .frame(minWidth: 300, minHeight: 300)
-        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: selectedSectorId)
+        .animation(
+            .spring(response: 0.4, dampingFraction: 0.6),
+            value: hoveredBar
+        )
         .onAppear {
             calculateChartData()
         }
@@ -38,32 +42,26 @@ struct ChartCategoryView: View {
                 calculateChartData()
             }
         }
-        .onChange(of: selectedAngle) { _, newAngle in
-            updateSelection(newAngle: newAngle)
-        }
     }
 
-    private func createSectorMark(for data: ChartData) -> some ChartContent {
-        let isSelected = selectedSectorId == data.id
-        let radius: MarkDimension = isSelected ? .ratio(0.9) : .ratio(0.8)
-        let opacity: Double = (selectedSectorId == nil || isSelected) ? 1.0 : 0.5
+    private func createBarMark(for data: ChartData) -> some ChartContent {
+        let isSelected = hoveredBar == data.category.name || hoveredBar == nil
+        let opacity: Double = (isSelected) ? 1.0 : 0.5
 
-        return SectorMark(
-            angle: .value(data.category.name, Double(truncating: data.total as NSDecimalNumber)),
-            innerRadius: .ratio(0.6),
-            outerRadius: radius,
-            angularInset: 1
+        return BarMark(
+            x: .value("Categoria", data.category.name),
+            y: .value("Total gasto", Double(truncating: data.total as NSDecimalNumber))
         )
         .cornerRadius(4)
         .foregroundStyle(by: .value(data.category.name, data.category.name))
         .opacity(opacity)
-        .annotation(position: .overlay) {
+        .annotation(position: .top, alignment: .center) {
             annotationView(for: data)
         }
     }
 
     private func annotationView(for data: ChartData) -> some View {
-        let isSelected = selectedSectorId == data.id
+        let isSelected = hoveredBar == data.category.name || hoveredBar == nil
         let opacity = isSelected ? 1 : 0.6
 
         return Text(data.total, format: .currency(code: "BRL"))
@@ -72,7 +70,8 @@ struct ChartCategoryView: View {
     }
 
     func calculateChartData() {
-        let data: [(Category, Decimal)] = supabase.transactionsDB.compactMap { transaction -> (Category, Decimal)? in
+        let data: [(Category, Decimal)] = supabase.transactionsDB.compactMap {
+            transaction -> (Category, Decimal)? in
             guard let cents = transaction.installment_value else { return nil }
 
             let categoryId = transaction.category_id ?? 0
@@ -85,34 +84,20 @@ struct ChartCategoryView: View {
             }
 
             let decimalCents = Decimal(cents)
-            let decimalValue = decimalCents / Decimal(100)
+            let value = decimalCents / 100
 
-            return (category!, decimalValue)
+            return (category!, value)
         }
 
-        let groupedData: [Category: [(Category, Decimal)]] = Dictionary(grouping: data, by: { $0.0 })
+        let groupedData: [Category: [(Category, Decimal)]] = Dictionary(
+            grouping: data,
+            by: { $0.0 }
+        )
 
         chartData = groupedData.map { (key, value) in
-            let totalValue = value.reduce(0) { $0 + $1.1 }
+            let totalValue = value.reduce(Decimal(0)) { $0 + $1.1 }
 
             return ChartData(id: key.id!, category: key, total: totalValue)
-        }
-    }
-
-    func updateSelection(newAngle: Double?) {
-        guard let newAngle else {
-            selectedSectorId = nil
-            return
-        }
-        var cumulative = 0.0
-        selectedSectorId =
-            chartData.first { data in
-                let start = cumulative
-                let dataValue = Double(
-                    truncating: data.total as NSDecimalNumber
-                )
-                cumulative += dataValue
-                return newAngle >= start && newAngle < cumulative
-            }?.id
+        }.sorted(by: { $0.total < $1.total})
     }
 }
