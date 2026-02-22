@@ -31,7 +31,7 @@ struct PaymentTypeDB: Codable {
 }
 
 //@Model
-final class Transaction: Identifiable, Codable {
+final class Transaction: Identifiable, Codable, Equatable {
     // Use UUID for SwiftData identity and mark it unique
     @Attribute(.unique) var id: Int? = nil
     var name: String
@@ -70,5 +70,15 @@ final class Transaction: Identifiable, Codable {
         case total_portions
         case installment_value = "value"
         case category_id
+    }
+
+    static func == (lhs: Transaction, rhs: Transaction) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.amount_cents == rhs.amount_cents &&
+        lhs.payment_type_id == rhs.payment_type_id &&
+        lhs.total_portions == rhs.total_portions &&
+        lhs.installment_value == rhs.installment_value &&
+        lhs.category_id == rhs.category_id
     }
 }

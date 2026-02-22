@@ -96,14 +96,25 @@ struct ContentView: View {
 
                     // Gráfico
                     if !supabase.transactionsDB.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            SectionHeader(title: "Por categoria", icon: "chart.pie.fill")
+                        HStack {
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeader(title: "Por tipo de pagamento", icon: "bag.fill")
 
-                            TransactionPieChartView()
-                                .environmentObject(supabase)
+                                ChartPaymentTypeView()
+                                    .environmentObject(supabase)
+                            }
+                            .padding(16)
+                            .glassEffect(in: RoundedRectangle(cornerRadius: 20))
+
+                            VStack(alignment: .leading, spacing: 12) {
+                                SectionHeader(title: "Por categoria", icon: "tray.fill")
+
+                                ChartCategoryView()
+                                    .environmentObject(supabase)
+                            }
+                            .padding(16)
+                            .glassEffect(in: RoundedRectangle(cornerRadius: 20))
                         }
-                        .padding(16)
-                        .glassEffect(in: RoundedRectangle(cornerRadius: 20))
                     }
 
                     // Lista de transações
@@ -136,7 +147,7 @@ struct ContentView: View {
                                     ))
                                 }
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: 12)) 
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                         }
                     }
                     .padding(16)

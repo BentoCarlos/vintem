@@ -81,6 +81,9 @@ class SupabaseManager: ObservableObject {
             let currentYear = Calendar.current.component(.year, from: Date())
 
             let transactionsResponse: [Transaction] = try await transactions.fetchByDate(month: currentMonth, year: currentYear)
+
+            await refreshCategories()
+            
             transactionsDB = transactionsResponse
             loadingData = false
             errorLoadingData = false

@@ -27,7 +27,7 @@ extension PaymentType {
     }
 }
 
-struct TransactionPieChartView: View {
+struct ChartPaymentTypeView: View {
     @State private var selectedAngle: Double?
     @State private var selectedSectorId: String?
     @EnvironmentObject var supabase: SupabaseManager

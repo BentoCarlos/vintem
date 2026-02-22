@@ -7,7 +7,7 @@
 
 import Supabase
 
-struct Category: Codable, Identifiable, Equatable {
+struct Category: Codable, Identifiable, Equatable, Hashable {
     let id: Int?
     let name: String
     let icon: String?
