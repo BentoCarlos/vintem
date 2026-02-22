@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import Supabase
 
 struct TransactionRowView: View {
     let transaction: Transaction
@@ -23,6 +24,10 @@ struct TransactionRowView: View {
 
     private var transactionValue: Double? {
         transaction.amount_cents.map { Double($0) / 100.0 }
+    }
+
+    private var installmentValue: Double? {
+        transaction.installment_value.map { Double($0) / 100.0 }
     }
 
     private var paymentType: PaymentType? {
@@ -80,15 +85,46 @@ struct TransactionRowView: View {
             Spacer()
 
             // ── Valor ───────────────────────────────────────────────
-            if let value = transactionValue {
-                Text(value, format: .currency(code: "BRL"))
-                    .font(.system(size: 14, weight: .bold, design: .rounded))
-                    .foregroundStyle(.primary)
+
+            if let value = installmentValue {
+                VStack(alignment: .leading) {
+                    Text("Parcela:")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+
+                    Text(value, format: .currency(code: "BRL"))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                }
             } else {
                 Text("N/A")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.tertiary)
             }
+
+            Divider()
+
+            if let value = transactionValue {
+                VStack(alignment: .leading) {
+                    Text("Valor Total:")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+
+                    Text(value, format: .currency(code: "BRL"))
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(.primary)
+                }
+            } else {
+                Text("N/A")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.tertiary)
+            }
+
+            // ── Categoria ───────────────────────────────────────────
+            CategoryRowChip(
+                transaction: transaction,
+                color: paymentColor
+            )
 
             // ── Botão deletar ───────────────────────────────────────
             if isHovered {
@@ -127,3 +163,122 @@ struct TransactionRowView: View {
         }
     }
 }
+
+struct CategoryRowChip: View {
+    @EnvironmentObject var supabase: SupabaseManager
+    var transaction: Transaction
+    var color: Color
+
+    var category: Category? {
+        supabase.categoriesDB.first { $0.id == transaction.category_id }
+    }
+
+    var body: some View {
+        Text(category?.name ?? "Sem categoria")
+            .foregroundStyle(color, .primary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(color.opacity(0.15))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(color.opacity(0.2), lineWidth: 1)
+            )
+    }
+}
+
+#Preview {
+    VStack(spacing: 8) {
+        // Preview com diferentes tipos de pagamento
+        TransactionRowView(
+            transaction: Transaction(
+                id: 1,
+                name: "Mercado Extra",
+                amount_cents: 15790,
+                payment_type: PaymentTypeDB(name: "Crédito"),
+                payment_type_id: 1,
+                total_installments: 1,
+                installment_value: 15790,
+                category_id: 1
+            ),
+            onDelete: { _ in print("Deletado") }
+        )
+
+        TransactionRowView(
+            transaction: Transaction(
+                id: 2,
+                name: "Netflix Assinatura",
+                amount_cents: 5990,
+                payment_type: PaymentTypeDB(name: "Débito"),
+                payment_type_id: 2,
+                total_installments: 1,
+                installment_value: 5990,
+                category_id: 2
+            ),
+            onDelete: { _ in print("Deletado") }
+        )
+
+        TransactionRowView(
+            transaction: Transaction(
+                id: 3,
+                name: "Restaurante",
+                amount_cents: 8500,
+                payment_type: PaymentTypeDB(name: "Pix"),
+                payment_type_id: 3,
+                total_installments: 1,
+                installment_value: 8500,
+                category_id: 3
+            ),
+            onDelete: { _ in print("Deletado") }
+        )
+
+        TransactionRowView(
+            transaction: Transaction(
+                id: 4,
+                name: "Padaria",
+                amount_cents: 1250,
+                payment_type: PaymentTypeDB(name: "Dinheiro"),
+                payment_type_id: 4,
+                total_installments: 1,
+                installment_value: 1250,
+                category_id: 4
+            ),
+            onDelete: { _ in print("Deletado") }
+        )
+
+        TransactionRowView(
+            transaction: Transaction(
+                id: 5,
+                name: "Compra Parcelada",
+                amount_cents: 120000,
+                payment_type: PaymentTypeDB(name: "Crédito"),
+                payment_type_id: 1,
+                total_installments: 12,
+                installment_value: 10000,
+                category_id: 5
+            ),
+            onDelete: { _ in print("Deletado") }
+        )
+
+        // Preview sem valor (nil)
+        TransactionRowView(
+            transaction: Transaction(
+                id: 6,
+                name: "Transação sem valor",
+                amount_cents: nil,
+                payment_type: PaymentTypeDB(name: "Outro"),
+                payment_type_id: 5,
+                total_installments: 1,
+                installment_value: nil,
+                category_id: nil
+            ),
+            onDelete: { _ in print("Deletado") }
+        )
+    }
+    .padding()
+    .frame(width: 600)
+    .environmentObject(SupabaseManager())
+}
+
