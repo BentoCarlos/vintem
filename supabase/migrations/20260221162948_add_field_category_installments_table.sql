@@ -1,1 +1,0 @@
-ALTER TABLE transactions add if not exists category_id int references categories(id);

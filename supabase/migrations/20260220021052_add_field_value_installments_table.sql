@@ -1,1 +1,0 @@
-ALTER TABLE installments ADD value bigint;
