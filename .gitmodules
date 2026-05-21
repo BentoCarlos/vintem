@@ -1,3 +1,3 @@
-[submodule "supabase"]
-	path = supabase
-	url = https://github.com/BentoCarlos/vintem-backend.git
+[submodule "vintem-database"]
+	path = vintem-database
+	url = git@github.com:BentoCarlos/vintem-database.git
